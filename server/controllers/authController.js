@@ -24,7 +24,10 @@ exports.register = async (req, res) => {
 			return res.status(400).json({ message: 'Students must provide registrationNumber or studentId' });
 		}
 
-		const existing = await User.findOne({ $or: [ { email }, { registrationNumber }, { studentId } ] });
+		const orConditions = [{ email }];
+		if (registrationNumber) orConditions.push({ registrationNumber });
+		if (studentId) orConditions.push({ studentId });
+		const existing = await User.findOne({ $or: orConditions });
 		if (existing) return res.status(400).json({ message: 'Account with provided email/ID already exists' });
 
 		const verificationToken = crypto.randomBytes(20).toString('hex');

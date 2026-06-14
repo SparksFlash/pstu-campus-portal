@@ -16,8 +16,12 @@ const seedFaculties = async () => {
     await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('Connected to MongoDB');
 
-    const result = await Faculty.insertMany(FACULTIES_DATA);
-    console.log(`${result.length} faculties created successfully`);
+    let count = 0;
+    for (const faculty of FACULTIES_DATA) {
+      await Faculty.updateOne({ code: faculty.code }, { $set: faculty }, { upsert: true });
+      count++;
+    }
+    console.log(`${count} faculties seeded successfully`);
     process.exit(0);
   } catch (err) {
     console.error('Seeding error:', err);
