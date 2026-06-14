@@ -37,8 +37,8 @@ exports.register = async (req, res) => {
 		await user.save();
 
 		// Send welcome email (non-blocking — failure doesn't affect registration)
-		const html = `<p>Hi ${name},</p><p>Welcome to PSTU Campus Portal! Your account has been created successfully.</p><p>You can now log in with your email and password.</p>`;
-		sendEmail(email, 'Welcome to PSTU Campus Portal', html).catch(err =>
+		const { sendWelcomeEmail } = require('../utils/emailService');
+		sendWelcomeEmail(email, name).catch(err =>
 			console.error('Welcome email failed (non-critical):', err.message)
 		);
 
