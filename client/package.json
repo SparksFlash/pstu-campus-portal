@@ -1,0 +1,54 @@
+{
+  "name": "pstu-web-app-client",
+  "version": "1.0.0",
+  "description": "PSTU Web App - React Frontend with Premium UI",
+  "private": true,
+  "homepage": "/",
+  "proxy": "http://localhost:5000",
+  "dependencies": {
+    "autoprefixer": "^10.4.12",
+    "axios": "^1.4.0",
+    "cmdk": "^1.1.1",
+    "date-fns": "^2.29.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.4.0",
+    "jspdf-autotable": "^5.0.8",
+    "postcss": "^8.4.20",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.8.0",
+    "react-router-dom": "^6.4.0",
+    "react-toastify": "^9.1.2",
+    "recharts": "^3.8.1",
+    "tailwindcss": "^3.2.0"
+  },
+  "devDependencies": {
+    "react-scripts": "5.0.1",
+    "sharp": "^0.32.1"
+  },
+  "scripts": {
+    "dev": "react-scripts start",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "optimize-images": "node scripts/optimize-images.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

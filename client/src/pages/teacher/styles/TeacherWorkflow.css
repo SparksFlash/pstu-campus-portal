@@ -1,0 +1,189 @@
+/* TeacherWorkflow.css */
+
+.teacher-workflow-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+  padding-top: 80px;
+}
+
+.workflow-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.workflow-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.workflow-title {
+  flex: 1;
+}
+
+.workflow-title h1 {
+  margin: 0 0 5px 0;
+  font-size: 28px;
+}
+
+.workflow-title p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.semester-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12px 20px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.semester-selector label {
+  color: white;
+  font-weight: 600;
+  margin: 0;
+}
+
+.semester-selector select {
+  padding: 8px 12px;
+  border: 2px solid white;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.semester-selector select:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.semester-selector select:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.semester-selector select option {
+  background: #333;
+  color: white;
+}
+
+.view-switcher {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.view-btn {
+  padding: 10px 20px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.view-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.view-btn:hover {
+  border-color: #667eea;
+}
+
+.workflow-content {
+  padding: 30px;
+  min-height: 400px;
+}
+
+.workflow-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.workflow-empty-state svg {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.workflow-empty-state h3 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+}
+
+.workflow-empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Loading Spinner */
+.workflow-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .workflow-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .semester-selector {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .view-switcher {
+    gap: 5px;
+  }
+
+  .view-btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .workflow-title h1 {
+    font-size: 20px;
+  }
+}
