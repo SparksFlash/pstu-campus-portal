@@ -38,18 +38,9 @@ const Register = () => {
         if (registrationNumber) payload.registrationNumber = registrationNumber;
         if (studentId) payload.studentId = studentId;
       }
-      const res = await authService.register(payload);
-      // registration endpoint sends verification email; do not auto-login
+      await authService.register(payload);
       setLoading(false);
-      const data = res?.data || {};
-      if (data.verifyUrl) {
-        setVerifyUrl(data.verifyUrl);
-      } else if (data.verificationToken) {
-        // older fallback: show token if only token returned
-        setVerifyUrl(`${window.location.origin}/api/auth/verify?token=${data.verificationToken}`);
-      } else {
-        navigate('/login', { state: { info: 'Registration successful. Please check your email to verify your account.' } });
-      }
+      navigate('/login', { state: { info: 'Registration successful! You can now log in.' } });
       return;
     } catch (err) {
       const msg = err?.response?.data?.message || err.message || 'Registration failed';
