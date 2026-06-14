@@ -1,0 +1,70 @@
+services:
+  # ── Backend API ───────────────────────────────────────────────────────
+  - type: web
+    name: pstu-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: CLIENT_URL
+        sync: false
+      - key: SERVER_URL
+        sync: false
+      - key: EMAIL_SERVICE
+        value: gmail
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: SSLC_STORE_ID
+        sync: false
+      - key: SSLC_STORE_PASS
+        sync: false
+      - key: SSLC_IS_LIVE
+        value: false
+      - key: MAX_FILE_SIZE
+        value: 10mb
+      - key: LOG_LEVEL
+        value: info
+
+  # ── Frontend Static Site ──────────────────────────────────────────────
+  - type: web
+    name: pstu-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    plan: free
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false
+      - key: REACT_APP_APP_NAME
+        value: PSTU Campus Portal
+      - key: REACT_APP_ENV
+        value: production
+      - key: REACT_APP_ENABLE_ANALYTICS
+        value: false
+      - key: REACT_APP_DEBUG_MODE
+        value: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
