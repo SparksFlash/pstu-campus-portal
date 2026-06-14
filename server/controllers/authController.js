@@ -30,37 +30,19 @@ exports.register = async (req, res) => {
 		const existing = await User.findOne({ $or: orConditions });
 		if (existing) return res.status(400).json({ message: 'Account with provided email/ID already exists' });
 
-		const verificationToken = crypto.randomBytes(20).toString('hex');
-		const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
-
 		const user = new User({
 			name, email, password, role, faculty, registrationNumber, studentId,
-			isVerified: false, verificationToken, verificationTokenExpires,
+			isVerified: true,
 		});
 		await user.save();
 
-		const SERVER_URL = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
-		const verifyUrl = `${SERVER_URL}/api/v1/auth/verify/${verificationToken}`;
-		const html = `<p>Hi ${name},</p><p>Please verify your email by clicking the link below:</p><p><a href="${verifyUrl}">Verify Email</a></p><p>This link expires in 24 hours.</p>`;
+		// Send welcome email (non-blocking — failure doesn't affect registration)
+		const html = `<p>Hi ${name},</p><p>Welcome to PSTU Campus Portal! Your account has been created successfully.</p><p>You can now log in with your email and password.</p>`;
+		sendEmail(email, 'Welcome to PSTU Campus Portal', html).catch(err =>
+			console.error('Welcome email failed (non-critical):', err.message)
+		);
 
-		let emailSent = false;
-		try {
-			const info = await sendEmail(email, 'Verify your PSTU account', html);
-			emailSent = !!info;
-		} catch (emailErr) {
-			console.error('Failed to send verification email:', emailErr);
-		}
-
-		const isDev = process.env.NODE_ENV !== 'production' || process.env.DEBUG_EMAIL === 'true';
-		if (!emailSent && isDev) {
-			return res.status(201).json({
-				message: 'Registration successful. Email sending is not configured. Use the token to verify.',
-				verificationToken,
-				verifyUrl,
-			});
-		}
-
-		res.status(201).json({ message: 'Registration successful. Please check your email to verify your account.' });
+		res.status(201).json({ message: 'Registration successful. You can now log in.' });
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ message: 'Server error' });
