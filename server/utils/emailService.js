@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 const FROM_NAME  = process.env.EMAIL_FROM_NAME || 'PSTU Campus Portal';
-const FROM_EMAIL = process.env.EMAIL_USER;
+const FROM_EMAIL = process.env.EMAIL_FROM || process.env.EMAIL_USER;
 
 let transporter = null;
 
