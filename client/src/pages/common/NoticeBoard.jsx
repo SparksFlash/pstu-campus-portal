@@ -88,7 +88,7 @@ const NoticeBoard = () => {
     try {
       const res = search
         ? await noticeService.searchNotices(search)
-        : await noticeService.getLatestNotices(20);
+        : await noticeService.getAllNotices();
       setNotices(Array.isArray(res) ? res : []);
     } catch {
       setNotices([]);
