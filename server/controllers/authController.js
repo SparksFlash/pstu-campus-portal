@@ -30,19 +30,43 @@ exports.register = async (req, res) => {
 		const existing = await User.findOne({ $or: orConditions });
 		if (existing) return res.status(400).json({ message: 'Account with provided email/ID already exists' });
 
+		const verificationToken        = crypto.randomBytes(32).toString('hex');
+		const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+
 		const user = new User({
 			name, email, password, role, faculty, registrationNumber, studentId,
-			isVerified: true,
+			isVerified: false, verificationToken, verificationTokenExpires,
 		});
 		await user.save();
 
-		// Send welcome email (non-blocking — failure doesn't affect registration)
-		const { sendWelcomeEmail } = require('../utils/emailService');
-		sendWelcomeEmail(email, name).catch(err =>
-			console.error('Welcome email failed (non-critical):', err.message)
-		);
+		const SERVER_URL = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
+		const CLIENT_URL_LOCAL = process.env.CLIENT_URL || 'http://localhost:3000';
+		const verifyUrl = `${SERVER_URL}/api/v1/auth/verify/${verificationToken}`;
 
-		res.status(201).json({ message: 'Registration successful. You can now log in.' });
+		const html = `
+			<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+				<h2 style="color:#1d4ed8">Verify Your PSTU Account</h2>
+				<p>Hi <strong>${name}</strong>,</p>
+				<p>Thank you for registering on <strong>PSTU Campus Portal</strong>.</p>
+				<p>Please click the button below to verify your email address:</p>
+				<div style="text-align:center;margin:30px 0">
+					<a href="${verifyUrl}" style="background:#1d4ed8;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:16px">Verify Email</a>
+				</div>
+				<p style="color:#6b7280;font-size:13px">This link expires in 24 hours. If you did not register, ignore this email.</p>
+			</div>`;
+
+		try {
+			await require('../utils/emailService').sendEmail(email, 'Verify your PSTU Campus Portal account', html);
+			res.status(201).json({ message: 'Registration successful! Please check your email to verify your account.' });
+		} catch (emailErr) {
+			console.error('Verification email failed:', emailErr.message);
+			// Auto-verify if email fails so user is not stuck
+			user.isVerified = true;
+			user.verificationToken = undefined;
+			user.verificationTokenExpires = undefined;
+			await user.save();
+			res.status(201).json({ message: 'Registration successful! You can now log in.' });
+		}
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ message: 'Server error' });

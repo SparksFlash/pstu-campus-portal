@@ -38,9 +38,10 @@ const Register = () => {
         if (registrationNumber) payload.registrationNumber = registrationNumber;
         if (studentId) payload.studentId = studentId;
       }
-      await authService.register(payload);
+      const res = await authService.register(payload);
       setLoading(false);
-      navigate('/login', { state: { info: 'Registration successful! You can now log in.' } });
+      const msg = res?.data?.message || 'Registration successful!';
+      navigate('/login', { state: { info: msg } });
       return;
     } catch (err) {
       const msg = err?.response?.data?.message || err.message || 'Registration failed';
