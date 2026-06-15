@@ -36,7 +36,7 @@ exports.forgotPasswordSchema = Joi.object({
 exports.resetPasswordSchema = Joi.object({
   email: Joi.string().email().lowercase().required(),
   otp: Joi.string().length(6).pattern(/^\d+$/).required(),
-  password: passwordRules.required(),
+  password: Joi.string().min(6).max(128).required(),
 });
 
 exports.changePasswordSchema = Joi.object({
