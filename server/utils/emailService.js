@@ -7,22 +7,27 @@ let transporter = null;
 
 if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
   transporter = nodemailer.createTransport({
-    host:   process.env.EMAIL_HOST,
-    port:   parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false,
+    host:             process.env.EMAIL_HOST,
+    port:             parseInt(process.env.EMAIL_PORT) || 587,
+    secure:           false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
+    connectionTimeout: 8000,
+    greetingTimeout:   5000,
+    socketTimeout:     8000,
   });
 } else if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-  // Fallback: Gmail (works in development)
   transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service:           'gmail',
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
+    connectionTimeout: 8000,
+    greetingTimeout:   5000,
+    socketTimeout:     8000,
   });
 } else {
   console.warn('[Email] Credentials not configured — emails will be logged only');

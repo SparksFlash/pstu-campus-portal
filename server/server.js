@@ -13,6 +13,9 @@ const { connectDatabase } = require('./config/database');
 
 const app = express();
 
+// Trust Render/proxy headers (required for rate limiter behind reverse proxy)
+app.set('trust proxy', 1);
+
 // Swagger / OpenAPI setup
 const swaggerUi = require('swagger-ui-express');
 const swaggerJSDoc = require('swagger-jsdoc');
