@@ -1,84 +1,70 @@
-const nodemailer = require('nodemailer');
-
 const FROM_NAME  = process.env.EMAIL_FROM_NAME || 'PSTU Campus Portal';
-const FROM_EMAIL = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+const FROM_EMAIL = process.env.EMAIL_FROM || 'ug2102056@cse.pstu.ac.bd';
 
-let transporter = null;
+const sendViaBrevoAPI = async (to, subject, html) => {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error('BREVO_API_KEY not set');
 
-if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-  transporter = nodemailer.createTransport({
-    host:             process.env.EMAIL_HOST,
-    port:             parseInt(process.env.EMAIL_PORT) || 587,
-    secure:           false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept':       'application/json',
+      'api-key':      apiKey,
+      'content-type': 'application/json',
     },
-    connectionTimeout: 8000,
-    greetingTimeout:   5000,
-    socketTimeout:     8000,
+    body: JSON.stringify({
+      sender:      { name: FROM_NAME, email: FROM_EMAIL },
+      to:          [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
   });
-} else if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-  transporter = nodemailer.createTransport({
-    service:           'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    connectionTimeout: 8000,
-    greetingTimeout:   5000,
-    socketTimeout:     8000,
-  });
-} else {
-  console.warn('[Email] Credentials not configured — emails will be logged only');
-}
 
-exports.sendEmail = async (to, subject, html) => {
-  if (!transporter) {
-    console.log('[DEV EMAIL] To:', to, '| Subject:', subject);
-    return { messageId: 'dev-logged', accepted: [to] };
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`Brevo API ${res.status}: ${JSON.stringify(err)}`);
   }
 
-  const info = await transporter.sendMail({
-    from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
-    to,
-    subject,
-    html,
-  });
-
-  console.log('[Email] Sent:', info.messageId, '→', to);
-  return info;
+  const data = await res.json();
+  console.log('[Email] Sent via Brevo API → messageId:', data.messageId, '→ to:', to);
+  return data;
 };
 
-exports.sendWelcomeEmail = async (to, name) => {
+exports.sendEmail = async (to, subject, html) => {
+  if (!process.env.BREVO_API_KEY) {
+    console.log('[DEV EMAIL] To:', to, '| Subject:', subject);
+    return { messageId: 'dev-logged' };
+  }
+  return sendViaBrevoAPI(to, subject, html);
+};
+
+exports.sendWelcomeEmail = (to, name) => {
   const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px">
       <h2 style="color:#1d4ed8">Welcome to PSTU Campus Portal</h2>
       <p>Hi <strong>${name}</strong>,</p>
-      <p>Your account has been created successfully. You can now log in and access all features.</p>
+      <p>Your account has been created. You can now log in and access all features.</p>
       <p style="color:#6b7280;font-size:13px">Patuakhali Science and Technology University</p>
     </div>`;
   return exports.sendEmail(to, 'Welcome to PSTU Campus Portal', html);
 };
 
-exports.sendGradeNotification = async (to, studentName, courseName, gpa) => {
+exports.sendGradeNotification = (to, studentName, courseName, gpa) => {
   const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px">
       <h2 style="color:#1d4ed8">Grade Posted</h2>
       <p>Hi <strong>${studentName}</strong>,</p>
-      <p>Your grade for <strong>${courseName}</strong> has been posted.</p>
-      <p>GPA: <strong>${gpa}</strong></p>
+      <p>Your grade for <strong>${courseName}</strong> has been posted. GPA: <strong>${gpa}</strong></p>
     </div>`;
   return exports.sendEmail(to, `Grade Posted: ${courseName}`, html);
 };
 
-exports.sendResultNotification = async (to, studentName, semester, cgpa) => {
+exports.sendResultNotification = (to, studentName, semester, cgpa) => {
   const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px">
       <h2 style="color:#1d4ed8">Result Published</h2>
       <p>Hi <strong>${studentName}</strong>,</p>
-      <p>Your result for <strong>Semester ${semester}</strong> is now available.</p>
-      <p>CGPA: <strong>${cgpa}</strong></p>
+      <p>Semester <strong>${semester}</strong> result is now available. CGPA: <strong>${cgpa}</strong></p>
     </div>`;
   return exports.sendEmail(to, `Semester ${semester} Result Published`, html);
 };
