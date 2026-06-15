@@ -16,6 +16,7 @@ const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [verifyUrl, setVerifyUrl] = useState('');
+  const [loadingMsg, setLoadingMsg] = useState('Creating account...');
 
   const navigate = useNavigate();
 
@@ -31,6 +32,8 @@ const Register = () => {
     if (role === 'teacher' && !faculty) return setError('Please select a faculty');
 
     setLoading(true);
+    setLoadingMsg('Creating account...');
+    const msgTimer = setTimeout(() => setLoadingMsg('Server is starting up, please wait...'), 8000);
     try {
       const payload = { name, email, password, role, faculty };
       if (role === 'student') {
@@ -39,14 +42,17 @@ const Register = () => {
         if (studentId) payload.studentId = studentId;
       }
       const res = await authService.register(payload);
+      clearTimeout(msgTimer);
       setLoading(false);
-      const msg = res?.data?.message || 'Registration successful!';
+      const msg = res?.message || res?.data?.message || 'Registration successful!';
       navigate('/login', { state: { info: msg } });
       return;
     } catch (err) {
-      const msg = err?.response?.data?.message || err.message || 'Registration failed';
+      clearTimeout(msgTimer);
+      const msg = err?.message || err?.response?.data?.message || 'Registration failed. Please try again.';
       setError(msg);
     } finally {
+      clearTimeout(msgTimer);
       setLoading(false);
     }
   };
@@ -179,7 +185,7 @@ const Register = () => {
             disabled={loading}
             className="w-full bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition disabled:opacity-50 font-medium"
           >
-            {loading ? 'Creating account...' : 'Register'}
+            {loading ? loadingMsg : 'Register'}
           </button>
         </form>
         <div className="mt-4 text-center">
