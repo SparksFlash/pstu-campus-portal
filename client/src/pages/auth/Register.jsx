@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../../services/authService';
 import { facultyService } from '../../services/facultyService';
 import { validateEmail, validatePassword } from '../../utils/validators';
+import { useAuth } from '../../hooks/useAuth';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -19,6 +21,23 @@ const Register = () => {
   const [loadingMsg, setLoadingMsg] = useState('Creating account...');
 
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setLoading(true);
+    try {
+      const response = await authService.googleAuth(credentialResponse.credential);
+      login(response.user, response.token);
+      if (response.user.role === 'admin') navigate('/admin/dashboard');
+      else if (response.user.role === 'teacher') navigate('/teacher/dashboard');
+      else navigate('/student/dashboard');
+    } catch (err) {
+      setError(err?.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,6 +207,27 @@ const Register = () => {
             {loading ? loadingMsg : 'Register'}
           </button>
         </form>
+        {process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+          <div className="mt-5">
+            <div className="relative flex items-center my-3">
+              <div className="flex-grow border-t border-gray-200"></div>
+              <span className="mx-3 text-sm text-gray-400">or sign up with</span>
+              <div className="flex-grow border-t border-gray-200"></div>
+            </div>
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google sign-in failed. Please try again.')}
+                useOneTap={false}
+                text="signup_with"
+                shape="rectangular"
+                width="360"
+              />
+            </div>
+            <p className="text-xs text-gray-400 text-center mt-2">Google sign-up creates a student account. You can update your profile after sign-in.</p>
+          </div>
+        )}
+
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">Already have an account? <a href="/login" className="text-primary-600 font-medium">Login</a></p>
         </div>

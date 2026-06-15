@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../hooks/useAuth';
 import { authService } from '../../services/authService';
 import { validateEmail, validatePassword } from '../../utils/validators';
@@ -95,6 +96,22 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setLoading(true);
+    try {
+      const response = await authService.googleAuth(credentialResponse.credential);
+      login(response.user, response.token);
+      if (response.user.role === 'admin') navigate('/admin/dashboard');
+      else if (response.user.role === 'teacher') navigate('/teacher/dashboard');
+      else navigate('/student/dashboard');
+    } catch (err) {
+      setError(err?.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-transparent">
       <div className="bg-white p-8 rounded-lg shadow-premium w-full max-w-md">
@@ -183,6 +200,10 @@ const Login = () => {
             />
           </div>
 
+          <div className="flex justify-end">
+            <a href="/forgot-password" className="text-sm text-primary-600 hover:underline">Forgot password?</a>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -191,6 +212,26 @@ const Login = () => {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+        {process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+          <div className="mt-5">
+            <div className="relative flex items-center my-3">
+              <div className="flex-grow border-t border-gray-200"></div>
+              <span className="mx-3 text-sm text-gray-400">or</span>
+              <div className="flex-grow border-t border-gray-200"></div>
+            </div>
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google sign-in failed. Please try again.')}
+                useOneTap={false}
+                text="signin_with"
+                shape="rectangular"
+                width="360"
+              />
+            </div>
+          </div>
+        )}
+
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">Don't have an account? <a href="/register" className="text-primary-600 font-medium">Register</a></p>
         </div>

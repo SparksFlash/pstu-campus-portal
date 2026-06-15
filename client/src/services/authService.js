@@ -23,4 +23,13 @@ export const authService = {
 
   changePassword: (oldPassword, newPassword) =>
     api.post('/auth/change-password', { oldPassword, newPassword }),
+
+  forgotPassword: (email) =>
+    api.post('/auth/forgot-password', { email }),
+
+  resetPassword: (email, otp, password) =>
+    api.post('/auth/reset-password', { email, otp, password }),
+
+  googleAuth: (credential) =>
+    api.post('/auth/google', { credential }),
 };

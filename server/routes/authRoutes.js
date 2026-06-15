@@ -7,6 +7,7 @@ const {
   verifyEmailAndRedirect,
   forgotPassword,
   resetPassword,
+  googleAuth,
 } = require('../controllers/authController');
 const validate = require('../middleware/validate');
 const {
@@ -60,5 +61,14 @@ router.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
  *     tags: [Auth]
  */
 router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
+
+/**
+ * @openapi
+ * /auth/google:
+ *   post:
+ *     summary: Sign in or register with Google
+ *     tags: [Auth]
+ */
+router.post('/google', googleAuth);
 
 module.exports = router;

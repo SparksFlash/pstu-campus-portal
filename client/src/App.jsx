@@ -14,6 +14,7 @@ import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyEmail from './pages/auth/VerifyEmail';
+import ForgotPassword from './pages/auth/ForgotPassword';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import TeacherDashboard from './pages/dashboard/TeacherDashboard';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
@@ -56,6 +57,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify" element={<VerifyEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
 
               {/* Admin routes */}
               <Route path="/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

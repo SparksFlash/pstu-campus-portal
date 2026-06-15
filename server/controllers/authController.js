@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const { sendEmail } = require('../utils/emailService');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
@@ -56,7 +59,7 @@ exports.register = async (req, res) => {
 			</div>`;
 
 		try {
-			await require('../utils/emailService').sendEmail(email, 'Verify your PSTU Campus Portal account', html);
+			await sendEmail(email, 'Verify your PSTU Campus Portal account', html);
 			res.status(201).json({ message: 'Registration successful! Please check your email to verify your account.' });
 		} catch (emailErr) {
 			console.error('Verification email failed:', emailErr.message);
@@ -189,7 +192,7 @@ exports.verifyEmailAndRedirect = async (req, res) => {
 
 /**
  * POST /api/v1/auth/forgot-password
- * Generates a secure reset token (stored as SHA-256 hash) and emails the plain token.
+ * Generates a 6-digit OTP (stored as SHA-256 hash) and emails it to the user.
  */
 exports.forgotPassword = async (req, res) => {
 	try {
@@ -198,44 +201,44 @@ exports.forgotPassword = async (req, res) => {
 
 		// Always return 200 so attackers cannot enumerate valid emails
 		if (!user) {
-			return res.json({ message: 'If that email is registered you will receive a reset link shortly.' });
+			return res.json({ message: 'If that email is registered you will receive an OTP shortly.' });
 		}
 
-		// Generate plain token, store only its hash
-		const plainToken = crypto.randomBytes(32).toString('hex');
-		const tokenHash = crypto.createHash('sha256').update(plainToken).digest('hex');
+		// Generate 6-digit OTP, store only its SHA-256 hash
+		const otp = Math.floor(100000 + Math.random() * 900000).toString();
+		const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
 
-		user.resetPasswordToken = tokenHash;
-		user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+		user.resetPasswordToken = otpHash;
+		user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 		await user.save({ validateBeforeSave: false });
 
-		const resetUrl = `${CLIENT_URL}/auth/reset-password?token=${plainToken}`;
 		const html = `
-			<p>Hi ${user.name},</p>
-			<p>You requested a password reset for your PSTU account.</p>
-			<p><a href="${resetUrl}">Reset your password</a></p>
-			<p>This link expires in <strong>1 hour</strong>.</p>
-			<p>If you did not request this, please ignore this email — your password will remain unchanged.</p>
+			<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px">
+				<h2 style="color:#1d4ed8">Password Reset OTP</h2>
+				<p>Hi <strong>${user.name}</strong>,</p>
+				<p>You requested a password reset for your PSTU Campus Portal account.</p>
+				<p>Your one-time password (OTP) is:</p>
+				<div style="text-align:center;margin:24px 0">
+					<span style="font-size:36px;font-weight:bold;letter-spacing:10px;color:#1d4ed8;background:#eff6ff;padding:16px 24px;border-radius:8px;display:inline-block">${otp}</span>
+				</div>
+				<p>This OTP is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
+				<p style="color:#6b7280;font-size:13px">If you did not request this, please ignore this email — your password will remain unchanged.</p>
+			</div>
 		`;
 
-		let emailSent = false;
 		try {
-			await sendEmail(user.email, 'Reset your PSTU password', html);
-			emailSent = true;
+			await sendEmail(user.email, 'Your PSTU password reset OTP', html);
 		} catch (emailErr) {
-			console.error('Failed to send reset email:', emailErr);
-			// Clear the token so the user can try again
+			console.error('Failed to send OTP email:', emailErr);
 			user.resetPasswordToken = undefined;
 			user.resetPasswordExpires = undefined;
 			await user.save({ validateBeforeSave: false });
-			return res.status(500).json({ message: 'Failed to send reset email. Please try again.' });
+			return res.status(500).json({ message: 'Failed to send OTP email. Please try again.' });
 		}
 
 		const isDev = process.env.NODE_ENV !== 'production';
-		const response = { message: 'If that email is registered you will receive a reset link shortly.' };
-		if (!emailSent || isDev) {
-			response.devResetUrl = resetUrl;
-		}
+		const response = { message: 'OTP sent to your email. It expires in 10 minutes.' };
+		if (isDev) response.devOtp = otp;
 		res.json(response);
 	} catch (err) {
 		console.error(err);
@@ -246,21 +249,23 @@ exports.forgotPassword = async (req, res) => {
 
 /**
  * POST /api/v1/auth/reset-password
- * Verifies the hashed token and updates the user password.
+ * Verifies the OTP hash and updates the user password.
+ * Body: { email, otp, password }
  */
 exports.resetPassword = async (req, res) => {
 	try {
-		const { token, password } = req.body;
+		const { email, otp, password } = req.body;
 
-		const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+		const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
 
 		const user = await User.findOne({
-			resetPasswordToken: tokenHash,
+			email: email.toLowerCase(),
+			resetPasswordToken: otpHash,
 			resetPasswordExpires: { $gt: Date.now() },
 		});
 
 		if (!user) {
-			return res.status(400).json({ message: 'Reset token is invalid or has expired.' });
+			return res.status(400).json({ message: 'OTP is invalid or has expired.' });
 		}
 
 		user.password = password;
@@ -274,5 +279,89 @@ exports.resetPassword = async (req, res) => {
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ message: 'Server error' });
+	}
+};
+
+
+/**
+ * POST /api/v1/auth/google
+ * Verify Google ID token; find or create user; return JWT.
+ * Body: { credential } — the ID token from @react-oauth/google
+ */
+exports.googleAuth = async (req, res) => {
+	try {
+		const { credential } = req.body;
+		if (!credential) return res.status(400).json({ message: 'Google credential missing' });
+
+		if (!process.env.GOOGLE_CLIENT_ID) {
+			return res.status(503).json({ message: 'Google sign-in is not configured on this server.' });
+		}
+
+		// Verify the ID token
+		const ticket = await googleClient.verifyIdToken({
+			idToken: credential,
+			audience: process.env.GOOGLE_CLIENT_ID,
+		});
+		const payload = ticket.getPayload();
+		const { sub: googleId, email, name, picture } = payload;
+
+		if (!email) return res.status(400).json({ message: 'Google account has no email' });
+
+		// Find existing user by googleId first, then by email
+		let user = await User.findOne({ googleId }).populate('faculty', 'name');
+		let isNewUser = false;
+
+		if (!user) {
+			user = await User.findOne({ email: email.toLowerCase() }).populate('faculty', 'name');
+			if (user) {
+				// Link existing email-based account to Google
+				user.googleId = googleId;
+				if (!user.profilePicture && picture) user.profilePicture = picture;
+				await user.save({ validateBeforeSave: false });
+			} else {
+				// Create new user — role defaults to student, profile completion required
+				user = new User({
+					name,
+					email: email.toLowerCase(),
+					googleId,
+					profilePicture: picture || '',
+					role: 'student',
+					isVerified: true,
+					isActive: true,
+				});
+				await user.save({ validateBeforeSave: false });
+				isNewUser = true;
+			}
+		}
+
+		if (!user.isActive) {
+			return res.status(403).json({ message: 'Your account has been deactivated. Contact support.' });
+		}
+
+		await user.updateOne({ $set: { lastLogin: Date.now() } });
+
+		const token = generateToken(user);
+		res.json({
+			token,
+			isNewUser,
+			user: {
+				id:                 user._id,
+				name:               user.name,
+				email:              user.email,
+				role:               user.role,
+				faculty:            user.faculty || null,
+				registrationNumber: user.registrationNumber || null,
+				studentId:          user.studentId          || null,
+				employeeId:         user.employeeId         || null,
+				semester:           user.semester           || null,
+				profilePicture:     user.profilePicture     || null,
+			},
+		});
+	} catch (err) {
+		console.error('googleAuth error:', err);
+		if (err.message && err.message.includes('Token used too late')) {
+			return res.status(401).json({ message: 'Google token expired. Please try again.' });
+		}
+		res.status(500).json({ message: 'Google sign-in failed. Please try again.' });
 	}
 };
