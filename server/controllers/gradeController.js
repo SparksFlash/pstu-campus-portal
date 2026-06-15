@@ -88,8 +88,11 @@ exports.recordGrade = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    if (totalMarks > 100) {
+      return res.status(400).json({ message: 'Total marks cannot exceed 100' });
+    }
     if (obtainedMarks < 0 || obtainedMarks > totalMarks || totalMarks <= 0) {
-      return res.status(400).json({ message: 'Invalid marks' });
+      return res.status(400).json({ message: 'Obtained marks must be between 0 and total marks' });
     }
 
     // Get course and student info

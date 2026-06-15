@@ -104,18 +104,37 @@ export default function StudentMarksEntry({ student, semester, onBack, onMarksUp
 
       const marksToSave = [];
       let hasMarks = false;
+      let validationError = '';
 
       Object.keys(marks).forEach(courseId => {
         const courseMarks = marks[courseId];
         if (courseMarks.obtainedMarks !== '') {
+          const obtained = parseFloat(courseMarks.obtainedMarks);
+          const total    = parseFloat(courseMarks.totalMarks) || 100;
+
+          if (total > 100) {
+            validationError = 'Total marks cannot exceed 100';
+            return;
+          }
+          if (obtained < 0 || obtained > total) {
+            validationError = `Obtained marks must be between 0 and ${total}`;
+            return;
+          }
+
           hasMarks = true;
           marksToSave.push({
             courseId,
-            obtainedMarks: parseFloat(courseMarks.obtainedMarks),
-            totalMarks: courseMarks.totalMarks
+            obtainedMarks: obtained,
+            totalMarks:    total,
           });
         }
       });
+
+      if (validationError) {
+        setMessage(`✗ ${validationError}`);
+        setSaving(false);
+        return;
+      }
 
       if (!hasMarks) {
         setMessage('Please enter marks for at least one course');
@@ -258,6 +277,7 @@ export default function StudentMarksEntry({ student, semester, onBack, onMarksUp
                     <input
                       type="number"
                       min="1"
+                      max="100"
                       value={courseMarks.totalMarks || 100}
                       onChange={(e) =>
                         handleMarksChange(course._id, 'totalMarks', e.target.value)
