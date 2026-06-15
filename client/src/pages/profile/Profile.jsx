@@ -53,7 +53,7 @@ const Profile = () => {
       alert('Profile updated');
     } catch (err) {
       console.error('Update failed', err);
-      alert(err?.response?.data?.message || 'Update failed');
+      alert(err?.message || err?.response?.data?.message || 'Update failed');
     }
   };
 

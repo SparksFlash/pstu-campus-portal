@@ -18,8 +18,20 @@ exports.updateProfile = async (req, res) => {
 
 		// allowed fields for users to update themselves
 		const allowed = ['name', 'phone', 'profilePicture', 'address', 'dateOfBirth', 'registrationNumber', 'employeeId', 'faculty', 'password'];
+		const objectIdFields = ['faculty'];
+		const dateFields = ['dateOfBirth'];
 		allowed.forEach((field) => {
-			if (req.body[field] !== undefined) user[field] = req.body[field];
+			const val = req.body[field];
+			if (val === undefined) return;
+			if (objectIdFields.includes(field)) {
+				// empty string can't be cast to ObjectId — set to null to clear
+				user[field] = val === '' ? null : val;
+			} else if (dateFields.includes(field)) {
+				// empty string can't be cast to Date — set to null to clear
+				user[field] = val === '' ? null : val;
+			} else {
+				user[field] = val;
+			}
 		});
 		user.updatedAt = Date.now();
 		await user.save();
