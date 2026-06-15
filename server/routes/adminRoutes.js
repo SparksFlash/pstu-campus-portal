@@ -7,6 +7,7 @@ const {
   getAuditLogs,
   toggleUserActive,
   getAllUsers,
+  updateUser,
 } = require('../controllers/adminController');
 
 // All admin routes require authentication + admin role
@@ -16,5 +17,6 @@ router.get('/stats', getDashboardStats);
 router.get('/audit-logs', getAuditLogs);
 router.get('/users', getAllUsers);
 router.patch('/users/:id/toggle-active', toggleUserActive);
+router.patch('/users/:id', updateUser);
 
 module.exports = router;

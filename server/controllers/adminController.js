@@ -100,6 +100,46 @@ exports.toggleUserActive = async (req, res) => {
   }
 };
 
+exports.updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const allowed = ['name', 'email', 'role', 'faculty', 'semester', 'registrationNumber', 'studentId', 'employeeId', 'isActive'];
+    allowed.forEach((field) => {
+      const val = req.body[field];
+      if (val === undefined) return;
+      if (field === 'semester') {
+        user[field] = val === '' || val === null ? null : parseInt(val);
+      } else if (field === 'faculty') {
+        user[field] = val === '' ? null : val;
+      } else {
+        user[field] = val;
+      }
+    });
+    user.updatedAt = Date.now();
+    await user.save({ validateBeforeSave: false });
+
+    await AuditLog.create({
+      actor: req.user._id,
+      actorRole: req.user.role,
+      action: 'UPDATE_USER',
+      resource: 'User',
+      resourceId: user._id,
+      after: req.body,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    const out = user.toObject();
+    delete out.password;
+    res.json({ message: 'User updated successfully', user: out });
+  } catch (err) {
+    console.error('updateUser error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 exports.getAllUsers = async (req, res) => {
   try {
     const { page, limit, role, q } = req.query;

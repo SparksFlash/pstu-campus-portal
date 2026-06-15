@@ -81,13 +81,14 @@ exports.getStudentsBySemester = async (req, res) => {
       return res.status(400).json({ message: 'Teacher must have a faculty assigned' });
     }
 
-    // Get all students from teacher's faculty
+    // Get students in teacher's faculty for the requested semester
     const students = await User.find({
       role: 'student',
       faculty: teacher.faculty,
+      semester: parseInt(semester),
       isActive: true
     })
-      .select('_id name email registrationNumber studentId faculty profilePicture')
+      .select('_id name email registrationNumber studentId faculty profilePicture semester')
       .sort({ name: 1 });
 
     console.log('[Teacher API] Found students:', students.length);

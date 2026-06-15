@@ -3,7 +3,7 @@ import Layout from '../../components/Layout';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { adminService } from '../../services/adminService';
 import { toast } from 'react-toastify';
-import { FiUsers, FiSearch, FiChevronLeft, FiChevronRight, FiRefreshCw } from 'react-icons/fi';
+import { FiUsers, FiSearch, FiChevronLeft, FiChevronRight, FiRefreshCw, FiEdit2, FiX, FiCheck } from 'react-icons/fi';
 
 const roleBadge = {
   admin:   'bg-purple-100 text-purple-700',
@@ -18,13 +18,56 @@ function formatDate(d) {
 
 const RowSkeleton = () => (
   <tr className="animate-pulse">
-    {Array.from({ length: 6 }).map((_, i) => (
+    {Array.from({ length: 7 }).map((_, i) => (
       <td key={i} className="px-4 py-3">
         <div className="h-4 bg-gray-100 rounded w-24" />
       </td>
     ))}
   </tr>
 );
+
+// Inline edit modal for semester
+const EditSemesterModal = ({ user, onSave, onClose }) => {
+  const [semester, setSemester] = useState(user.semester || '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave(user._id, semester);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-semibold text-gray-800">Edit Semester — {user.name}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><FiX size={18} /></button>
+        </div>
+        <select
+          value={semester}
+          onChange={e => setSemester(e.target.value)}
+          className="input w-full mb-4"
+        >
+          <option value="">— Not assigned —</option>
+          {[1,2,3,4,5,6,7,8].map(s => (
+            <option key={s} value={s}>Semester {s}</option>
+          ))}
+        </select>
+        <div className="flex gap-2 justify-end">
+          <button onClick={onClose} className="btn-secondary text-sm">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="btn-primary text-sm flex items-center gap-1">
+            <FiCheck size={14} /> {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const UserManagement = () => {
   const [users, setUsers]             = useState([]);
@@ -34,7 +77,8 @@ const UserManagement = () => {
   const [roleFilter, setRoleFilter]   = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch]           = useState('');
-  const [confirm, setConfirm]         = useState(null); // { userId, name, isActive }
+  const [confirm, setConfirm]         = useState(null);
+  const [editUser, setEditUser]       = useState(null); // user being edited
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,6 +111,16 @@ const UserManagement = () => {
     } catch (err) {
       toast.error(err?.message || 'Action failed');
       setConfirm(null);
+    }
+  };
+
+  const handleUpdateSemester = async (userId, semester) => {
+    try {
+      await adminService.updateUser(userId, { semester: semester === '' ? null : parseInt(semester) });
+      toast.success('Semester updated');
+      load();
+    } catch (err) {
+      toast.error(err?.message || 'Update failed');
     }
   };
 
@@ -125,8 +179,8 @@ const UserManagement = () => {
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Email</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Role</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Faculty</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">Semester</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">Joined</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Action</th>
                 </tr>
               </thead>
@@ -164,6 +218,24 @@ const UserManagement = () => {
                       </td>
                       <td className="px-4 py-3 text-gray-500">{u.faculty?.name || '—'}</td>
                       <td className="px-4 py-3">
+                        {u.role === 'student' ? (
+                          <div className="flex items-center gap-1">
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${u.semester ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-400'}`}>
+                              {u.semester ? `Sem ${u.semester}` : 'Not set'}
+                            </span>
+                            <button
+                              onClick={() => setEditUser(u)}
+                              className="text-gray-400 hover:text-primary-600 transition"
+                              title="Edit semester"
+                            >
+                              <FiEdit2 size={13} />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-gray-300 text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
                         {u.isActive
                           ? <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Active</span>
                           : <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Inactive</span>
@@ -172,7 +244,6 @@ const UserManagement = () => {
                           <span className="ml-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Unverified</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
                       <td className="px-4 py-3">
                         <button
                           onClick={() => setConfirm({ userId: u._id, name: u.name, isActive: u.isActive })}
@@ -233,6 +304,15 @@ const UserManagement = () => {
         onConfirm={handleToggleActive}
         onCancel={() => setConfirm(null)}
       />
+
+      {/* Edit semester modal */}
+      {editUser && (
+        <EditSemesterModal
+          user={editUser}
+          onSave={handleUpdateSemester}
+          onClose={() => setEditUser(null)}
+        />
+      )}
     </Layout>
   );
 };

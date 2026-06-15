@@ -29,6 +29,7 @@ const Profile = () => {
           employeeId: res.user.employeeId || '',
           faculty: res.user.faculty?._id || res.user.faculty || '',
           profilePicture: res.user.profilePicture || '',
+          semester: res.user.semester || '',
         });
         setFaculties(f || []);
         setAvatarPreview(res.user.profilePicture || '');
@@ -112,6 +113,10 @@ const Profile = () => {
           <select name="faculty" value={form.faculty} onChange={handleChange} className="input">
             <option value="">Select faculty (if applicable)</option>
             {faculties.map(f => <option key={f._id} value={f._id}>{f.name}</option>)}
+          </select>
+          <select name="semester" value={form.semester} onChange={handleChange} className="input">
+            <option value="">Select semester (students only)</option>
+            {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
           </select>
           <div className="flex justify-between items-center mt-3">
             <div>

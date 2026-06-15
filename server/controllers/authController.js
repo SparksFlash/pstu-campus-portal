@@ -15,7 +15,7 @@ function generateToken(user) {
 
 exports.register = async (req, res) => {
 	try {
-		const { name, email, password, role, faculty, registrationNumber, studentId } = req.body;
+		const { name, email, password, role, faculty, registrationNumber, studentId, semester } = req.body;
 		if (!name || !email || !password || !role) return res.status(400).json({ message: 'Missing fields' });
 
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,6 +25,9 @@ exports.register = async (req, res) => {
 
 		if (role === 'student' && !registrationNumber && !studentId) {
 			return res.status(400).json({ message: 'Students must provide registrationNumber or studentId' });
+		}
+		if (role === 'student' && (!semester || semester < 1 || semester > 8)) {
+			return res.status(400).json({ message: 'Students must select a semester (1–8)' });
 		}
 
 		const orConditions = [{ email }];
@@ -38,6 +41,7 @@ exports.register = async (req, res) => {
 
 		const user = new User({
 			name, email, password, role, faculty, registrationNumber, studentId,
+			semester: role === 'student' ? parseInt(semester) : undefined,
 			isVerified: false, verificationToken, verificationTokenExpires,
 		});
 		await user.save();

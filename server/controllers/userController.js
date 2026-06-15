@@ -17,18 +17,19 @@ exports.updateProfile = async (req, res) => {
 		if (!user) return res.status(404).json({ message: 'User not found' });
 
 		// allowed fields for users to update themselves
-		const allowed = ['name', 'phone', 'profilePicture', 'address', 'dateOfBirth', 'registrationNumber', 'employeeId', 'faculty', 'password'];
+		const allowed = ['name', 'phone', 'profilePicture', 'address', 'dateOfBirth', 'registrationNumber', 'employeeId', 'faculty', 'password', 'semester'];
 		const objectIdFields = ['faculty'];
 		const dateFields = ['dateOfBirth'];
+		const numberFields = ['semester'];
 		allowed.forEach((field) => {
 			const val = req.body[field];
 			if (val === undefined) return;
 			if (objectIdFields.includes(field)) {
-				// empty string can't be cast to ObjectId — set to null to clear
 				user[field] = val === '' ? null : val;
 			} else if (dateFields.includes(field)) {
-				// empty string can't be cast to Date — set to null to clear
 				user[field] = val === '' ? null : val;
+			} else if (numberFields.includes(field)) {
+				user[field] = val === '' ? null : parseInt(val);
 			} else {
 				user[field] = val;
 			}

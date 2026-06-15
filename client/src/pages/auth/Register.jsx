@@ -15,6 +15,7 @@ const Register = () => {
   const [studentId, setStudentId] = useState('');
   const [faculties, setFaculties] = useState([]);
   const [faculty, setFaculty] = useState('');
+  const [semester, setSemester] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [verifyUrl, setVerifyUrl] = useState('');
@@ -49,6 +50,7 @@ const Register = () => {
 
     // require faculty for teachers
     if (role === 'teacher' && !faculty) return setError('Please select a faculty');
+    if (role === 'student' && !semester) return setError('Please select your current semester');
 
     setLoading(true);
     setLoadingMsg('Creating account...');
@@ -59,6 +61,7 @@ const Register = () => {
         if (!registrationNumber && !studentId) return setError('Students must provide registration number or student ID');
         if (registrationNumber) payload.registrationNumber = registrationNumber;
         if (studentId) payload.studentId = studentId;
+        payload.semester = parseInt(semester);
       }
       const res = await authService.register(payload);
       clearTimeout(msgTimer);
@@ -163,6 +166,13 @@ const Register = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Student ID <span className="text-gray-400 font-normal">(optional)</span></label>
                 <input value={studentId} onChange={e => setStudentId(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Student ID" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Semester</label>
+                <select value={semester} onChange={e => setSemester(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <option value="">Select semester</option>
+                  {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+                </select>
               </div>
             </>
           )}

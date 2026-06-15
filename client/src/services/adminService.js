@@ -12,4 +12,7 @@ export const adminService = {
 
   toggleUserActive: (userId) =>
     api.patch(`/admin/users/${userId}/toggle-active`),
+
+  updateUser: (userId, data) =>
+    api.patch(`/admin/users/${userId}`, data),
 };

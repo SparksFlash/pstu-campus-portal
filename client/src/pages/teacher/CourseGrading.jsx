@@ -94,7 +94,26 @@ export default function CourseGrading() {
   const handleSaveGrades = async () => {
     try {
       setSaving(true);
-      setMessage('Saving grades...');
+      setMessage('');
+
+      // Validate marks before sending
+      let validationError = '';
+      Object.entries(grades).forEach(([, marksData]) => {
+        if (marksData.obtainedMarks !== '' && !validationError) {
+          const obtained = parseFloat(marksData.obtainedMarks);
+          const total = parseFloat(marksData.totalMarks) || 100;
+          if (total > 100) {
+            validationError = 'Total marks cannot exceed 100';
+          } else if (obtained < 0 || obtained > total) {
+            validationError = `Obtained marks must be between 0 and ${total}`;
+          }
+        }
+      });
+      if (validationError) {
+        setMessage(`✗ ${validationError}`);
+        setSaving(false);
+        return;
+      }
 
       const gradesToSave = [];
       Object.keys(grades).forEach((studentId) => {
