@@ -39,6 +39,8 @@ import PaymentFail from './pages/student/PaymentFail';
 import PaymentDashboard from './pages/admin/PaymentDashboard';
 import Profile from './pages/profile/Profile';
 import ChangePassword from './pages/profile/ChangePassword';
+import StudentOverview from './pages/student/StudentOverview';
+import TeacherOverview from './pages/teacher/TeacherOverview';
 
 // Styles
 import './index.css';
@@ -70,6 +72,7 @@ function App() {
 
               {/* Teacher routes */}
               <Route path="/teacher/dashboard" element={<ProtectedRoute requiredRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />
+              <Route path="/teacher/overview" element={<ProtectedRoute requiredRoles={['teacher']}><TeacherOverview /></ProtectedRoute>} />
               <Route path="/teacher/students"  element={<ProtectedRoute requiredRoles={['teacher']}><Students /></ProtectedRoute>} />
               <Route path="/teacher/grading"   element={<ProtectedRoute requiredRoles={['teacher']}><CourseGrading /></ProtectedRoute>} />
               <Route path="/teacher/workflow"     element={<ProtectedRoute requiredRoles={['teacher']}><TeacherWorkflow /></ProtectedRoute>} />
@@ -78,6 +81,7 @@ function App() {
 
               {/* Student routes */}
               <Route path="/student/dashboard" element={<ProtectedRoute requiredRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/student/overview" element={<ProtectedRoute requiredRoles={['student']}><StudentOverview /></ProtectedRoute>} />
               <Route path="/student/results"      element={<ProtectedRoute requiredRoles={['student']}><StudentResults /></ProtectedRoute>} />
               <Route path="/student/enrollments"      element={<ProtectedRoute requiredRoles={['student']}><CourseEnrollment /></ProtectedRoute>} />
               <Route path="/student/payments"         element={<ProtectedRoute requiredRoles={['student']}><PaymentGateway /></ProtectedRoute>} />

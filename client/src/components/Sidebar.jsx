@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   FiHome, FiUsers, FiBook, FiBarChart2, FiBell,
   FiTruck, FiPhone, FiGrid, FiShield, FiCheckSquare,
-  FiUpload, FiBookOpen, FiX, FiCreditCard, FiList,
+  FiUpload, FiBookOpen, FiX, FiCreditCard, FiList, FiLayout,
 } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { useApp } from '../hooks/useApp';
@@ -47,6 +47,7 @@ const Sidebar = () => {
 
   if (user?.role === 'teacher') {
     menuItems.push(
+      { label: 'Overview',        path: '/teacher/overview',    icon: FiLayout      },
       { label: 'Enter Marks',     path: '/teacher/workflow',    icon: FiBarChart2   },
       { label: 'Publish Results', path: '/teacher/publish',     icon: FiCheckSquare },
       { label: 'Bulk Import',     path: '/teacher/bulk-import', icon: FiUpload      },
@@ -56,6 +57,7 @@ const Sidebar = () => {
 
   if (user?.role === 'student') {
     menuItems.push(
+      { label: 'Overview',        path: '/student/overview',        icon: FiLayout     },
       { label: 'My Results',      path: '/student/results',         icon: FiBarChart2  },
       { label: 'Enrollment',      path: '/student/enrollments',     icon: FiBookOpen   },
       { label: 'Pay Fees',        path: '/student/payments',        icon: FiCreditCard },

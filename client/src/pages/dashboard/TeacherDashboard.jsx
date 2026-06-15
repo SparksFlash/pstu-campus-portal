@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { StatCard, StatCardSkeleton } from '../../components/ui/StatCard';
+import NoticeCarousel from '../../components/NoticeCarousel';
 import teacherService from '../../services/teacherService';
 import { FiUsers, FiBook, FiCheckSquare, FiClock, FiEdit3, FiUpload } from 'react-icons/fi';
 
@@ -38,6 +39,9 @@ const TeacherDashboard = () => {
             </>
           )}
         </div>
+
+        {/* Notice Carousel */}
+        <NoticeCarousel limit={5} />
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

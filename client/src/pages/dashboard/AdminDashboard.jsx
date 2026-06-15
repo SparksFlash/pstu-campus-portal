@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import StatCard, { StatCardSkeleton } from '../../components/ui/StatCard';
+import NoticeCarousel from '../../components/NoticeCarousel';
 import { adminService } from '../../services/adminService';
 import {
   FiUsers, FiBook, FiGrid, FiAward, FiBarChart2, FiFileText,
@@ -60,6 +61,9 @@ const AdminDashboard = () => {
             : statCards.map((s) => <StatCard key={s.label} {...s} />)
           }
         </div>
+
+        {/* Notice Carousel */}
+        <NoticeCarousel limit={5} />
 
         {/* Recent Registrations */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

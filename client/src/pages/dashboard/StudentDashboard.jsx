@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { StatCard, StatCardSkeleton } from '../../components/ui/StatCard';
+import NoticeCarousel from '../../components/NoticeCarousel';
 import studentService from '../../services/studentService';
 import { useAuth } from '../../hooks/useAuth';
 import { formatCGPA } from '../../utils/formatters';
@@ -87,6 +88,9 @@ export default function StudentDashboard() {
             </>
           )}
         </div>
+
+        {/* Notice Carousel */}
+        <NoticeCarousel limit={5} />
 
         {/* Quick actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
