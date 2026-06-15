@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || '/api/v1';
+const API_URL = process.env.REACT_APP_API_URL || 'https://pstu-api.onrender.com/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 60000,
 });
 
 // Request interceptor
@@ -38,7 +38,7 @@ api.interceptors.response.use(
     // Network / CORS errors (no response) -> provide helpful message
     if (!error.response) {
       console.error('API network error:', error.message || error);
-      return Promise.reject({ message: 'Cannot reach the server. Make sure the backend is running on port 5000.' });
+      return Promise.reject({ message: 'Cannot reach the server. The server may be starting up — please wait 30 seconds and try again.' });
     }
 
     return Promise.reject(error.response?.data || error);
