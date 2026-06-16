@@ -41,6 +41,9 @@ import Profile from './pages/profile/Profile';
 import ChangePassword from './pages/profile/ChangePassword';
 import StudentOverview from './pages/student/StudentOverview';
 import TeacherOverview from './pages/teacher/TeacherOverview';
+import Pricing from './pages/public/Pricing';
+import InstitutionRegister from './pages/public/InstitutionRegister';
+import InstitutionList from './pages/superadmin/InstitutionList';
 
 // Styles
 import './index.css';
@@ -56,6 +59,8 @@ function App() {
           <AppProvider>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/institution/register" element={<InstitutionRegister />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify" element={<VerifyEmail />} />
@@ -69,6 +74,7 @@ function App() {
               <Route path="/admin/faculties" element={<ProtectedRoute requiredRoles={['admin']}><FacultyManagement /></ProtectedRoute>} />
               <Route path="/admin/audit-logs" element={<ProtectedRoute requiredRoles={['admin']}><AuditLog /></ProtectedRoute>} />
               <Route path="/admin/payments"  element={<ProtectedRoute requiredRoles={['admin']}><PaymentDashboard /></ProtectedRoute>} />
+              <Route path="/superadmin/institutions" element={<ProtectedRoute requiredRoles={['admin']}><InstitutionList /></ProtectedRoute>} />
 
               {/* Teacher routes */}
               <Route path="/teacher/dashboard" element={<ProtectedRoute requiredRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />

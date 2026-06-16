@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   FiHome, FiUsers, FiBook, FiBarChart2, FiBell,
   FiTruck, FiPhone, FiGrid, FiShield, FiCheckSquare,
-  FiUpload, FiBookOpen, FiX, FiCreditCard, FiList, FiLayout,
+  FiUpload, FiBookOpen, FiX, FiCreditCard, FiList, FiLayout, FiGlobe,
 } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { useApp } from '../hooks/useApp';
@@ -37,11 +37,12 @@ const Sidebar = () => {
 
   if (user?.role === 'admin') {
     menuItems.push(
-      { label: 'Users',     path: '/admin/users',      icon: FiUsers      },
-      { label: 'Courses',   path: '/admin/courses',    icon: FiBook       },
-      { label: 'Faculties', path: '/admin/faculties',  icon: FiGrid       },
-      { label: 'Payments',  path: '/admin/payments',   icon: FiCreditCard },
-      { label: 'Audit Log', path: '/admin/audit-logs', icon: FiShield     },
+      { label: 'Users',         path: '/admin/users',               icon: FiUsers      },
+      { label: 'Courses',       path: '/admin/courses',             icon: FiBook       },
+      { label: 'Faculties',     path: '/admin/faculties',           icon: FiGrid       },
+      { label: 'Payments',      path: '/admin/payments',            icon: FiCreditCard },
+      { label: 'Audit Log',     path: '/admin/audit-logs',          icon: FiShield     },
+      { label: 'Institutions',  path: '/superadmin/institutions',   icon: FiGlobe      },
     );
   }
 
