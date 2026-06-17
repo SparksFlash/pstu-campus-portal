@@ -44,6 +44,7 @@ import TeacherOverview from './pages/teacher/TeacherOverview';
 import Pricing from './pages/public/Pricing';
 import InstitutionRegister from './pages/public/InstitutionRegister';
 import InstitutionList from './pages/superadmin/InstitutionList';
+import ClassRoutine from './pages/common/ClassRoutine';
 
 // Styles
 import './index.css';
@@ -98,9 +99,10 @@ function App() {
               <Route path="/payment/cancel"  element={<PaymentFail />} />
 
               {/* Common protected routes */}
-              <Route path="/notices"       element={<ProtectedRoute><NoticeBoard /></ProtectedRoute>} />
+              <Route path="/notices"        element={<ProtectedRoute><NoticeBoard /></ProtectedRoute>} />
               <Route path="/bus-schedule"  element={<ProtectedRoute><BusSchedule /></ProtectedRoute>} />
               <Route path="/phone-diary"   element={<ProtectedRoute><PhoneDiary /></ProtectedRoute>} />
+              <Route path="/class-routine" element={<ProtectedRoute><ClassRoutine /></ProtectedRoute>} />
               <Route path="/profile"               element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/profile/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
 

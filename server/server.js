@@ -113,6 +113,7 @@ app.use('/api/v1/payments',      require('./routes/paymentRoutes'));
 app.use('/api/v1/notices', require('./routes/noticeRoutes'));
 app.use('/api/v1/bus-schedule', require('./routes/busRoutes'));
 app.use('/api/v1/phone-diary', require('./routes/phoneRoutes'));
+app.use('/api/v1/class-routine', require('./routes/classRoutineRoutes'));
 
 // 404 Handler
 app.use((req, res) => {

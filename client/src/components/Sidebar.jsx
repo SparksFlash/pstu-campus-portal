@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   FiHome, FiUsers, FiBook, FiBarChart2, FiBell,
   FiTruck, FiPhone, FiGrid, FiShield, FiCheckSquare,
-  FiUpload, FiBookOpen, FiX, FiCreditCard, FiList, FiLayout, FiGlobe,
+  FiUpload, FiBookOpen, FiX, FiCreditCard, FiList, FiLayout, FiGlobe, FiCalendar,
 } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { useApp } from '../hooks/useApp';
@@ -67,9 +67,10 @@ const Sidebar = () => {
   }
 
   menuItems.push(
-    { label: 'Notices',      path: '/notices',      icon: FiBell  },
-    { label: 'Bus Schedule', path: '/bus-schedule', icon: FiTruck },
-    { label: 'Phone Diary',  path: '/phone-diary',  icon: FiPhone },
+    { label: 'Notices',       path: '/notices',       icon: FiBell     },
+    { label: 'Bus Schedule',  path: '/bus-schedule',  icon: FiTruck    },
+    { label: 'Phone Diary',   path: '/phone-diary',   icon: FiPhone    },
+    { label: 'Class Routine', path: '/class-routine', icon: FiCalendar },
   );
 
   if (!sidebarOpen) return null;
