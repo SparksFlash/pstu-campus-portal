@@ -1,6 +1,16 @@
 const Notice = require('../models/Notice');
 const User   = require('../models/User');
 const { notifyMany } = require('../utils/notify');
+const { getEmbedding } = require('../utils/embeddings');
+
+// Fire-and-forget: generate embedding and save it back
+const embedNotice = (notice) => {
+  if (!process.env.GEMINI_API_KEY) return;
+  const text = `${notice.title}. ${notice.content}`;
+  getEmbedding(text)
+    .then(vec => Notice.findByIdAndUpdate(notice._id, { embedding: vec }))
+    .catch(() => {});
+};
 
 exports.getAllNotices = async (req, res) => {
   try {
@@ -44,6 +54,7 @@ exports.createNotice = async (req, res) => {
       meta:  { noticeId: notice._id },
     }).catch(() => {});
 
+    embedNotice(notice);  // async, doesn't block response
     res.status(201).json(notice);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -54,6 +65,7 @@ exports.updateNotice = async (req, res) => {
   try {
     const notice = await Notice.findByIdAndUpdate(req.params.id, { ...req.body, updatedAt: Date.now() }, { new: true });
     if (!notice) return res.status(404).json({ message: 'Notice not found' });
+    embedNotice(notice);  // re-embed if content changed
     res.json(notice);
   } catch (err) {
     res.status(400).json({ message: err.message });

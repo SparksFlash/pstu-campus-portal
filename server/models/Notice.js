@@ -10,7 +10,8 @@ const noticeSchema = new mongoose.Schema({
 	publishDate: Date,
 	expiryDate: Date,
 	createdAt: { type: Date, default: Date.now },
-	updatedAt: Date
+	updatedAt: Date,
+	embedding: { type: [Number], select: false },  // vector for RAG search
 });
 
 module.exports = mongoose.model('Notice', noticeSchema);

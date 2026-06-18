@@ -1,4 +1,13 @@
 const Course = require('../models/Course');
+const { getEmbedding } = require('../utils/embeddings');
+
+const embedCourse = (course) => {
+  if (!process.env.GEMINI_API_KEY) return;
+  const text = `Course: ${course.code} - ${course.title}. Semester: ${course.semester}. ${course.description || ''}`;
+  getEmbedding(text)
+    .then(vec => Course.findByIdAndUpdate(course._id, { embedding: vec }))
+    .catch(() => {});
+};
 
 exports.getAllCourses = async (req, res) => {
   try {
@@ -28,6 +37,7 @@ exports.createCourse = async (req, res) => {
     const { code, title, faculty, semester, creditHours, teacher } = req.body;
     const course = new Course({ code, title, faculty, semester, creditHours, teacher });
     await course.save();
+    embedCourse(course);
     res.status(201).json(course);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -38,6 +48,7 @@ exports.updateCourse = async (req, res) => {
   try {
     const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('faculty teacher students');
     if (!course) return res.status(404).json({ message: 'Course not found' });
+    embedCourse(course);
     res.json(course);
   } catch (err) {
     res.status(400).json({ message: err.message });

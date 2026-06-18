@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import AIChatWidget from './AIChatWidget';
 
 const Layout = ({ children }) => {
   return (
@@ -14,6 +15,7 @@ const Layout = ({ children }) => {
         </main>
       </div>
       <Footer />
+      <AIChatWidget />
     </div>
   );
 };

@@ -11,7 +11,8 @@ const courseSchema = new mongoose.Schema({
 	students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 	description: String,
 	createdAt: { type: Date, default: Date.now },
-	updatedAt: Date
+	updatedAt: Date,
+	embedding: { type: [Number], select: false },  // vector for RAG search
 });
 
 module.exports = mongoose.model('Course', courseSchema);
