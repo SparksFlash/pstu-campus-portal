@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const ClassRoutine = require('../models/ClassRoutine');
 
 // GET /api/v1/class-routine?faculty=&semester=
@@ -22,6 +23,36 @@ exports.updateEntry = async (req, res) => {
     const { faculty, semester, day, timeSlot, courseCode, courseTitle, course, teacher, teacherName, room } = req.body;
     if (!faculty || !semester || !day || !timeSlot) {
       return res.status(400).json({ message: 'faculty, semester, day and timeSlot are required' });
+    }
+
+    // Teacher conflict check — ensure the teacher has no other class at this day+timeSlot
+    if (teacher) {
+      const conflict = await ClassRoutine.findOne({
+        entries: {
+          $elemMatch: {
+            day,
+            timeSlot,
+            teacher: new mongoose.Types.ObjectId(teacher),
+          },
+        },
+        // Exclude the current routine doc (its old entry will be $pull-ed before saving)
+        $nor: [{ faculty: new mongoose.Types.ObjectId(faculty), semester: parseInt(semester) }],
+      }).populate('faculty', 'name');
+
+      if (conflict) {
+        const conflictEntry = conflict.entries.find(
+          e => e.day === day && e.timeSlot === timeSlot && e.teacher?.toString() === teacher
+        );
+        return res.status(409).json({
+          message: `Conflict: ${conflictEntry?.teacherName || 'This teacher'} already has a class at ${day} ${timeSlot}`,
+          conflict: {
+            faculty: conflict.faculty?.name,
+            semester: conflict.semester,
+            courseCode: conflictEntry?.courseCode,
+            courseTitle: conflictEntry?.courseTitle,
+          },
+        });
+      }
     }
 
     const entry = { day, timeSlot, courseCode, courseTitle, course: course || undefined, teacher: teacher || undefined, teacherName, room };

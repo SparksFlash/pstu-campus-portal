@@ -205,7 +205,17 @@ export default function ClassRoutine() {
       toast.success('Class saved');
       setModalOpen(false);
     } catch (err) {
-      toast.error(err?.message || 'Failed to save');
+      if (err?.response?.status === 409) {
+        const c = err.response.data?.conflict;
+        toast.error(
+          c
+            ? `Conflict! ${form.teacherName || 'This teacher'} already has ${c.courseCode ? `"${c.courseCode}"` : 'a class'} in ${c.faculty} Sem ${c.semester} at this time.`
+            : (err.response.data?.message || 'Schedule conflict detected.'),
+          { autoClose: 7000 }
+        );
+      } else {
+        toast.error(err?.response?.data?.message || err?.message || 'Failed to save');
+      }
     } finally {
       setSaving(false);
     }
