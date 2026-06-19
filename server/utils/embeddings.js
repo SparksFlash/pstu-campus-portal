@@ -1,24 +1,27 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 
-let genAI = null;
+let groqClient = null;
 
-const getGenAI = () => {
-  if (!genAI) {
-    if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not set');
-    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const getGroq = () => {
+  if (!groqClient) {
+    if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
+    groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
-  return genAI;
+  return groqClient;
 };
 
-// Returns a 768-dim float array for the given text
-const getEmbedding = async (text) => {
-  const model = getGenAI().getGenerativeModel({ model: 'text-embedding-004' });
-  const result = await model.embedContent(String(text).slice(0, 8000));
-  return result.embedding.values;
+// Generate a chat response using Groq (llama-3.3-70b-versatile)
+const groqChat = async (systemPrompt, userMessage) => {
+  const completion = await getGroq().chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user',   content: userMessage },
+    ],
+    temperature: 0.7,
+    max_tokens: 1024,
+  });
+  return completion.choices[0].message.content;
 };
 
-// Returns a Gemini chat model instance
-const getChatModel = () =>
-  getGenAI().getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-module.exports = { getEmbedding, getChatModel };
+module.exports = { groqChat };
