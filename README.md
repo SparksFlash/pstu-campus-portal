@@ -3,7 +3,7 @@
 > A full-stack MERN web application and SaaS platform for university campus management.  
 > Built for Patuakhali Science and Technology University (PSTU) as the pilot institution.
 
-**Live Demo:** [https://pstu-campus-portal.onrender.com](https://pstu-campus-portal.onrender.com)  
+**Live Demo:** [https://pstu-client.onrender.com/](https://pstu-client.onrender.com/)  
 **Backend API:** [https://pstu-campus-portal-api.onrender.com](https://pstu-campus-portal-api.onrender.com)
 
 ---
