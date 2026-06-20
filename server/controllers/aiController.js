@@ -4,6 +4,7 @@ const Course         = require('../models/Course');
 const ClassRoutine   = require('../models/ClassRoutine');
 const Result         = require('../models/Result');
 const User           = require('../models/User');
+const Institution    = require('../models/Institution');
 
 // Build user-specific personal context from DB
 async function buildPersonalContext(user) {
@@ -46,11 +47,24 @@ async function buildPersonalContext(user) {
     });
 
   } else if (user.role === 'admin') {
-    const [students, teachers] = await Promise.all([
+    const [students, teachers, institutions] = await Promise.all([
       User.countDocuments({ role: 'student' }),
       User.countDocuments({ role: 'teacher' }),
+      Institution.find().sort({ createdAt: -1 }).select('universityName location type plan status createdAt'),
     ]);
-    Object.assign(ctx, { totalStudents: students, totalTeachers: teachers });
+    Object.assign(ctx, {
+      totalStudents: students,
+      totalTeachers: teachers,
+      institutionSummary: {
+        total:    institutions.length,
+        active:   institutions.filter(i => i.status === 'Active').length,
+        pending:  institutions.filter(i => i.status === 'Pending').length,
+        rejected: institutions.filter(i => i.status === 'Rejected').length,
+      },
+      institutions: institutions.map(i =>
+        `${i.universityName} | ${i.location} | ${i.type} | Plan: ${i.plan} | Status: ${i.status} | Applied: ${new Date(i.createdAt).toLocaleDateString('en-BD')}`
+      ),
+    });
   }
 
   return ctx;
