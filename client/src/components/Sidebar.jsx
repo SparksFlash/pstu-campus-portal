@@ -73,25 +73,28 @@ const Sidebar = () => {
     { label: 'Class Routine', path: '/class-routine', icon: FiCalendar },
   );
 
-  if (!sidebarOpen) return null;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  if (!sidebarOpen && !isMobile) return null;
 
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Mobile backdrop — fades in/out */}
       <div
-        className="fixed inset-0 bg-black/40 z-30 md:hidden"
+        className={`fixed inset-0 bg-black/40 z-30 md:hidden transition-opacity duration-300
+          ${sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={toggleSidebar}
         aria-hidden="true"
       />
 
-      {/* Sidebar panel */}
-      <aside className="
+      {/* Sidebar panel — slides in/out on mobile */}
+      <aside className={`
         fixed md:relative inset-y-0 left-0 z-40 md:z-auto
         w-64 bg-gray-900 dark:bg-gray-950 text-white shadow-lg
         flex-shrink-0 flex flex-col
         h-full md:h-auto md:min-h-screen
-        transition-transform duration-200
-      ">
+        transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
         {/* Mobile close button */}
         <div className="flex items-center justify-between px-5 pt-4 pb-2 md:hidden">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Menu</p>
