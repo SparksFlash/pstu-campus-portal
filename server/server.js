@@ -115,6 +115,7 @@ app.use('/api/v1/bus-schedule', require('./routes/busRoutes'));
 app.use('/api/v1/phone-diary', require('./routes/phoneRoutes'));
 app.use('/api/v1/class-routine', require('./routes/classRoutineRoutes'));
 app.use('/api/v1/ai',           require('./routes/aiRoutes'));
+app.use('/api/v1/institutions', require('./routes/institutionRoutes'));
 
 // 404 Handler
 app.use((req, res) => {

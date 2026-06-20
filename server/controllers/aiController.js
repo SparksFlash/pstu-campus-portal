@@ -96,7 +96,7 @@ ${JSON.stringify(personal, null, 2)}`;
 
     res.json({ reply });
   } catch (err) {
-    console.error('AI chat error:', err.message);
-    res.status(500).json({ message: 'AI service unavailable. Please try again.' });
+    console.error('AI chat error:', err.message, err.stack?.split('\n')[1]);
+    res.status(500).json({ message: err.message || 'AI service unavailable.' });
   }
 };

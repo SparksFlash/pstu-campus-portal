@@ -43,9 +43,10 @@ export default function AIChatWidget() {
     setLoading(true);
     try {
       const res = await aiService.chat(text);
-      setMessages(prev => [...prev, { role: 'ai', text: res.data?.reply || res.reply || 'দুঃখিত, উত্তর পাওয়া যায়নি।' }]);
+      const reply = res?.reply || res?.data?.reply;
+      setMessages(prev => [...prev, { role: 'ai', text: reply || 'দুঃখিত, উত্তর পাওয়া যায়নি।' }]);
     } catch (err) {
-      const msg = err?.response?.data?.message || 'দুঃখিত, এই মুহূর্তে সংযোগ করতে পারছি না। পরে চেষ্টা করুন।';
+      const msg = err?.message || err?.response?.data?.message || 'দুঃখিত, এই মুহূর্তে সংযোগ করতে পারছি না।';
       setMessages(prev => [...prev, { role: 'ai', text: msg, error: true }]);
     } finally {
       setLoading(false);

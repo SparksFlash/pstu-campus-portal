@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { FiBook, FiArrowLeft, FiCheckCircle, FiSend } from 'react-icons/fi';
+import { institutionService } from '../../services/institutionService';
 
 const PLANS = ['Starter (৳3,000/মাস)', 'Pro (৳8,000/মাস)', 'Enterprise (Custom)'];
 const TYPES = ['Public University', 'Private University', 'College', 'Technical Institute', 'Other'];
@@ -36,9 +38,14 @@ export default function InstitutionRegister() {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setSubmitting(false);
-    setSubmitted(true);
+    try {
+      await institutionService.register(form);
+      setSubmitted(true);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Submission failed. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
