@@ -48,7 +48,7 @@ const Navbar = () => {
   }[user?.role] || 'bg-gray-500';
 
   return (
-    <nav className="bg-primary-600 dark:bg-gray-900 text-white shadow-lg z-40 relative">
+    <nav className="bg-gradient-to-r from-primary-700 to-primary-600 dark:bg-gray-900 text-white z-40 relative border-b border-primary-500/30 dark:border-gray-700 shadow-[0_2px_20px_rgba(2,132,199,0.2)] dark:shadow-[0_2px_20px_rgba(0,0,0,0.4)]">
       <div className="px-4 py-3 flex justify-between items-center">
 
         {/* Left: hamburger + logo */}
@@ -97,8 +97,11 @@ const Navbar = () => {
             >
               <FiBell size={20} />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                <span className="absolute top-1 right-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60" />
+                  <span className="relative flex w-4 h-4 bg-red-500 rounded-full text-white text-[10px] font-bold items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
                 </span>
               )}
             </button>
@@ -122,7 +125,7 @@ const Navbar = () => {
               className="flex items-center gap-2 hover:bg-primary-700 dark:hover:bg-gray-700 px-2.5 py-1.5 rounded-lg transition"
             >
               {/* Avatar */}
-              <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-bold ${roleColor}`}>
+              <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-bold ring-2 ring-white/30 ${roleColor}`}>
                 {getInitials(user?.name)}
               </span>
               <span className="hidden sm:inline text-sm font-medium max-w-[120px] truncate">
@@ -132,7 +135,7 @@ const Navbar = () => {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden z-50">
+              <div className="absolute right-0 mt-2 w-52 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-100/80 dark:border-gray-700 rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50">
                 {/* User info header */}
                 <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                   <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{user?.name}</p>

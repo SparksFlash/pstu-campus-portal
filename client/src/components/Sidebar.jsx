@@ -23,8 +23,8 @@ const Sidebar = () => {
 
   const isActive = (path) =>
     location.pathname === path
-      ? 'bg-primary-600 text-white'
-      : 'text-gray-300 hover:bg-gray-800 hover:text-white';
+      ? 'bg-white/10 text-white border-l-[3px] border-primary-400'
+      : 'text-gray-400 hover:bg-white/5 hover:text-white border-l-[3px] border-transparent';
 
   const menuItems = [
     { label: 'Home',      path: '/',          icon: FiHome },
@@ -116,9 +116,9 @@ const Sidebar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm font-medium ${isActive(item.path)}`}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm font-medium ${isActive(item.path)}`}
               >
-                <item.icon size={17} />
+                <item.icon size={17} className={location.pathname === item.path ? 'text-primary-300' : ''} />
                 <span>{item.label}</span>
               </Link>
             ))}
