@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Layout from '../components/Layout';
@@ -323,6 +323,16 @@ const PublicLanding = () => (
 const Home = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+
+  // Force light mode on the public landing page — dark mode looks broken here
+  useEffect(() => {
+    if (!isAuthenticated) {
+      const html = document.documentElement;
+      const wasDark = html.classList.contains('dark');
+      if (wasDark) html.classList.remove('dark');
+      return () => { if (wasDark) html.classList.add('dark'); };
+    }
+  }, [isAuthenticated]);
 
   if (isAuthenticated) {
     return <AuthenticatedHome user={user} />;
