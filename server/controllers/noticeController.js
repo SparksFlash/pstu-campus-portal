@@ -14,10 +14,16 @@ const embedNotice = (notice) => {
 
 exports.getAllNotices = async (req, res) => {
   try {
-    const { faculty, isActive } = req.query;
+    const { faculty, isActive, limit, q } = req.query;
     const filter = { isActive: isActive !== 'false' };
     if (faculty) filter.faculty = faculty;
-    const notices = await Notice.find(filter).populate('createdBy faculty').sort({ createdAt: -1 });
+    if (q) filter.$or = [
+      { title: { $regex: q, $options: 'i' } },
+      { content: { $regex: q, $options: 'i' } },
+    ];
+    let query = Notice.find(filter).populate('createdBy faculty').sort({ createdAt: -1 });
+    if (limit) query = query.limit(parseInt(limit, 10));
+    const notices = await query;
     res.json(notices);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

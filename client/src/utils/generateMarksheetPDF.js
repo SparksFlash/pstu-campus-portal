@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 /**
  * Generates and downloads a professional marksheet PDF.
@@ -78,7 +78,7 @@ export function generateMarksheetPDF(data) {
     c.gpa != null ? Number(c.gpa).toFixed(2) : '—',
   ]);
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: y,
     head: [['#', 'Code', 'Course Title', 'Cr', 'Marks', '%', 'Grade', 'GPA']],
     body: tableBody,

@@ -8,6 +8,8 @@ const {
 } = require('../controllers/noticeController');
 
 router.get('/', getAllNotices);
+router.get('/latest', getAllNotices);   // ?limit=N — must be before /:id
+router.get('/search', getAllNotices);   // ?q=keyword — must be before /:id
 router.get('/:id', getNoticeById);
 router.post('/', auth, allowRoles('admin', 'teacher'), requireFields('title', 'content'), createNotice);
 router.put('/:id', auth, allowRoles('admin', 'teacher'), updateNotice);
