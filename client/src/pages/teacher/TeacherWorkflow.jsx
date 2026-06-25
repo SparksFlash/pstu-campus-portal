@@ -187,7 +187,7 @@ function MarksEntryPanel({ student, semester, onBack, onSaved }) {
     setDownloading(true);
     try {
       const data = await teacherService.generateMarksheet(student._id, semester);
-      generateMarksheetPDF(data);
+      await generateMarksheetPDF(data);
     } catch (err) {
       toast.error('Failed to generate PDF');
     } finally {

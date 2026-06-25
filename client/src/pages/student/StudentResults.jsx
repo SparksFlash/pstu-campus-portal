@@ -49,7 +49,7 @@ export default function StudentResults() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!results || !selectedSemester) return;
     setDownloading(true);
     try {
@@ -58,7 +58,7 @@ export default function StudentResults() {
         ? (semData.grades.reduce((s, g) => s + (g.percentage || 0), 0) / semData.grades.length).toFixed(2)
         : '0.00';
 
-      generateMarksheetPDF({
+      await generateMarksheetPDF({
         student: {
           name:               user?.name               || '—',
           registrationNumber: user?.registrationNumber || '—',

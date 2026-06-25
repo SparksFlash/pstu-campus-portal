@@ -1,184 +1,378 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-/**
- * Generates and downloads a professional marksheet PDF.
- * @param {Object} data — response from GET /teacher/marksheet/:studentId/semester/:semester
- */
-export function generateMarksheetPDF(data) {
+const C = {
+  navy:  [10,  60, 120],
+  black: [20,  20,  20],
+  gray:  [100, 100, 100],
+  lgray: [160, 160, 160],
+  bg:    [248, 249, 252],
+  white: [255, 255, 255],
+};
+
+async function loadLogo() {
+  try {
+    const res  = await fetch('/assets/logos/logo.png');
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader     = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror   = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+function safe(v, fb = '—') {
+  return (v === null || v === undefined || String(v).trim() === '') ? fb : String(v);
+}
+
+function ordinal(n) {
+  const x = parseInt(n, 10);
+  if (!x) return safe(n);
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = x % 100;
+  return `${x}${s[(v - 20) % 10] || s[v] || s[0]}`;
+}
+
+export async function generateMarksheetPDF(data) {
+  const logoData = await loadLogo();
+
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const PW = doc.internal.pageSize.getWidth();
+  const PW = 210, PH = 297, ML = 14, MR = 14;
+  const CW = PW - ML - MR; // 182 mm
 
-  // ── Header ──────────────────────────────────────────────────────────────────
-  doc.setFillColor(14, 116, 144); // teal-600
-  doc.rect(0, 0, PW, 28, 'F');
+  const student = data?.student   || {};
+  const courses = Array.isArray(data?.courses) ? data.courses : [];
+  const stats   = data?.statistics || {};
+  const sem     = data?.semester   ?? '—';
+  const now     = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+  const seq     = String(Math.floor(Math.random() * 8999) + 1000);
+  const docNo   = `PSTU/EXAM/SEM-${sem}/${now.getFullYear()}/${seq}`;
 
-  doc.setTextColor(255, 255, 255);
+  // ── Page border ──────────────────────────────────────────────────────────
+  doc.setDrawColor(...C.navy);
+  doc.setLineWidth(1.0);
+  doc.rect(7, 7, PW - 14, PH - 14);
+  doc.setLineWidth(0.25);
+  doc.rect(9, 9, PW - 18, PH - 18);
+
+  // ── Logo ─────────────────────────────────────────────────────────────────
+  if (logoData) {
+    doc.addImage(logoData, 'PNG', ML, 13, 22, 20);
+  }
+
+  // ── University header ────────────────────────────────────────────────────
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('Patuakhali Science and Technology University', PW / 2, 11, { align: 'center' });
+  doc.setFontSize(13.5);
+  doc.setTextColor(...C.navy);
+  doc.text('PATUAKHALI SCIENCE AND TECHNOLOGY UNIVERSITY', PW / 2, 18, { align: 'center' });
 
-  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Official Semester Marksheet', PW / 2, 18, { align: 'center' });
+  doc.setFontSize(8);
+  doc.setTextColor(...C.gray);
+  doc.text('Dumki, Patuakhali-8602, Bangladesh', PW / 2, 23.5, { align: 'center' });
+  doc.text('www.pstu.ac.bd  ·  exam@pstu.ac.bd  ·  +880-0400-0000', PW / 2, 28, { align: 'center' });
 
+  // ── Title block ──────────────────────────────────────────────────────────
+  let y = 34;
+  doc.setDrawColor(...C.navy);
+  doc.setLineWidth(0.8);
+  doc.line(ML, y, ML + CW, y);
+  doc.setLineWidth(0.2);
+  doc.line(ML, y + 1.5, ML + CW, y + 1.5);
+
+  y += 6.5;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...C.navy);
+  doc.text('SEMESTER RESULT SHEET  (PROVISIONAL)', PW / 2, y, { align: 'center' });
+
+  y += 4.5;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...C.gray);
+  doc.text(
+    'Issued under the authority of the Controller of Examinations, PSTU',
+    PW / 2, y, { align: 'center' }
+  );
+
+  y += 4;
+  doc.setDrawColor(...C.navy);
+  doc.setLineWidth(0.8);
+  doc.line(ML, y, ML + CW, y);
+  doc.setLineWidth(0.2);
+  doc.line(ML, y + 1.5, ML + CW, y + 1.5);
+
+  // ── Ref no & date ────────────────────────────────────────────────────────
+  y += 5.5;
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
-  doc.text(`Generated: ${new Date().toLocaleString('en-BD')}`, PW / 2, 24, { align: 'center' });
+  doc.setTextColor(...C.black);
+  doc.text(`Ref. No: ${docNo}`, ML, y);
+  doc.text(`Date of Issue: ${dateStr}`, ML + CW, y, { align: 'right' });
 
-  // ── Student Info ─────────────────────────────────────────────────────────────
-  doc.setTextColor(30, 41, 59);
-  let y = 36;
+  // ── Student info box ─────────────────────────────────────────────────────
+  y += 5;
+  const BOX_H = 34;
+  doc.setDrawColor(...C.navy);
+  doc.setLineWidth(0.5);
+  doc.rect(ML, y, CW, BOX_H);
+  doc.setLineWidth(0.25);
+  doc.line(ML + CW / 2, y, ML + CW / 2, y + BOX_H);
 
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(10, y, PW - 20, 30, 2, 2, 'F');
+  // Sub-header strips
+  doc.setFillColor(...C.bg);
+  doc.rect(ML,            y, CW / 2, 6.5, 'F');
+  doc.rect(ML + CW / 2,  y, CW / 2, 6.5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...C.navy);
+  doc.text('STUDENT INFORMATION',   ML + CW / 4,     y + 4.3, { align: 'center' });
+  doc.text('EXAMINATION DETAILS',   ML + CW * 3 / 4, y + 4.3, { align: 'center' });
 
-  const student = data.student || {};
-  const infoRows = [
-    ['Student Name',    student.name || '—',               'Semester',          String(data.semester || '—')],
-    ['Registration No', student.registrationNumber || '—', 'Student ID',        student.studentId || '—'],
-    ['Faculty',         student.faculty || '—',            'Email',             student.email || '—'],
+  const LEFT = [
+    ['Student Name',     safe(student.name)],
+    ['Registration No.', safe(student.registrationNumber)],
+    ['Student ID',       safe(student.studentId)],
+    ['Email Address',    safe(student.email)],
+  ];
+  const RIGHT = [
+    ['Semester',        `${ordinal(sem)} Semester`],
+    ['Faculty / Dept.', safe(student.faculty)],
+    ['Exam. Year',      String(now.getFullYear())],
+    ['Result Status',   courses.length > 0 ? 'Result Published' : 'Not Available'],
   ];
 
-  doc.setFontSize(8.5);
-  infoRows.forEach((row, i) => {
-    const ry = y + 6 + i * 8;
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(100, 116, 139);
-    doc.text(row[0] + ':', 15, ry);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 41, 59);
-    doc.text(row[1], 50, ry);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(100, 116, 139);
-    doc.text(row[2] + ':', PW / 2 + 5, ry);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 41, 59);
-    doc.text(row[3], PW / 2 + 38, ry);
+  doc.setFontSize(8);
+  LEFT.forEach(([label, val], i) => {
+    const ry = y + 9 + i * 6;
+    doc.setFont('helvetica', 'bold');   doc.setTextColor(...C.gray);
+    doc.text(label + ' :', ML + 3, ry);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...C.black);
+    doc.text(val, ML + 44, ry);
+  });
+  RIGHT.forEach(([label, val], i) => {
+    const ry = y + 9 + i * 6;
+    const rx = ML + CW / 2 + 3;
+    doc.setFont('helvetica', 'bold');   doc.setTextColor(...C.gray);
+    doc.text(label + ' :', rx, ry);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...C.black);
+    doc.text(val, rx + 40, ry);
   });
 
-  y += 36;
-
-  // ── Course Marks Table ───────────────────────────────────────────────────────
+  // ── Course table ─────────────────────────────────────────────────────────
+  y += BOX_H + 6;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(30, 41, 59);
-  doc.text('Course Marks', 10, y + 4);
-  y += 9;
+  doc.setFontSize(9);
+  doc.setTextColor(...C.navy);
+  doc.text(`ACADEMIC PERFORMANCE — ${ordinal(sem).toUpperCase()} SEMESTER`, ML, y);
+  y += 4;
 
-  const courses = data.courses || [];
-  const tableBody = courses.map((c, i) => [
-    i + 1,
-    c.code || '—',
-    c.title || '—',
-    c.credits || c.creditHours || '—',
-    `${c.obtainedMarks ?? '—'} / ${c.totalMarks ?? '—'}`,
-    c.percentage != null ? `${Number(c.percentage).toFixed(2)}%` : '—',
-    c.grade || '—',
-    c.gpa != null ? Number(c.gpa).toFixed(2) : '—',
-  ]);
+  const rows = courses.length
+    ? courses.map((c, i) => [
+        i + 1,
+        safe(c.code),
+        safe(c.title),
+        safe(c.credits ?? c.creditHours),
+        safe(c.totalMarks, '100'),
+        safe(c.obtainedMarks),
+        c.percentage != null ? Number(c.percentage).toFixed(1) : '—',
+        safe(c.grade),
+        c.gpa != null ? Number(c.gpa).toFixed(2) : '—',
+      ])
+    : [['', '', 'No grade records available for this semester.', '', '', '', '', '', '']];
 
   autoTable(doc, {
     startY: y,
-    head: [['#', 'Code', 'Course Title', 'Cr', 'Marks', '%', 'Grade', 'GPA']],
-    body: tableBody,
+    head: [[
+      { content: 'SL.',          styles: { halign: 'center', cellWidth: 8 } },
+      { content: 'Course\nCode', styles: { halign: 'center', cellWidth: 22 } },
+      { content: 'Course Title', styles: { halign: 'left',   cellWidth: 62 } },
+      { content: 'Cr.\nHr.',    styles: { halign: 'center', cellWidth: 11 } },
+      { content: 'Full\nMarks', styles: { halign: 'center', cellWidth: 16 } },
+      { content: 'Marks\nObtd.',styles: { halign: 'center', cellWidth: 16 } },
+      { content: '%',            styles: { halign: 'center', cellWidth: 13 } },
+      { content: 'Grade',        styles: { halign: 'center', cellWidth: 14 } },
+      { content: 'Grade\nPoint', styles: { halign: 'center', cellWidth: 20 } },
+    ]],
+    body: rows,
     theme: 'grid',
-    styles: { fontSize: 8, cellPadding: 2.5, textColor: [30, 41, 59] },
-    headStyles: { fillColor: [14, 116, 144], textColor: 255, fontStyle: 'bold', fontSize: 8.5 },
-    columnStyles: {
-      0: { halign: 'center', cellWidth: 8 },
-      1: { halign: 'center', cellWidth: 18 },
-      2: { cellWidth: 60 },
-      3: { halign: 'center', cellWidth: 10 },
-      4: { halign: 'center', cellWidth: 24 },
-      5: { halign: 'center', cellWidth: 18 },
-      6: { halign: 'center', cellWidth: 14 },
-      7: { halign: 'center', cellWidth: 14 },
+    styles: {
+      fontSize: 8,
+      cellPadding: { top: 2.2, bottom: 2.2, left: 2, right: 2 },
+      textColor: C.black,
+      lineColor: [190, 190, 190],
+      lineWidth: 0.25,
     },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    margin: { left: 10, right: 10 },
+    headStyles: {
+      fillColor:   C.navy,
+      textColor:   C.white,
+      fontStyle:   'bold',
+      fontSize:    7.5,
+      halign:      'center',
+      valign:      'middle',
+      cellPadding: 2.5,
+      minCellHeight: 11,
+    },
+    columnStyles: {
+      0: { halign: 'center' },
+      1: { halign: 'center', fontStyle: 'bold' },
+      3: { halign: 'center' },
+      4: { halign: 'center' },
+      5: { halign: 'center' },
+      6: { halign: 'center' },
+      7: { halign: 'center', fontStyle: 'bold' },
+      8: { halign: 'center' },
+    },
+    alternateRowStyles: { fillColor: C.bg },
+    tableLineColor: C.navy,
+    tableLineWidth: 0.45,
+    margin: { left: ML, right: MR },
   });
 
-  y = doc.lastAutoTable.finalY + 8;
+  y = doc.lastAutoTable.finalY + 5;
 
-  // ── Summary ──────────────────────────────────────────────────────────────────
-  const stats = data.statistics || {};
-  doc.setFillColor(240, 253, 244); // green-50
-  doc.roundedRect(10, y, PW - 20, 24, 2, 2, 'F');
-  doc.setDrawColor(134, 239, 172);
-  doc.roundedRect(10, y, PW - 20, 24, 2, 2, 'D');
-
-  const summaryItems = [
-    ['Total Courses', String(stats.totalCourses ?? courses.length)],
-    ['Total Credits',  String(stats.totalCredits ?? '—')],
-    ['Percentage',     stats.percentage ? `${stats.percentage}%` : '—'],
-    ['SGPA',           String(stats.sgpa ?? '—')],
-  ];
-
+  // ── Result summary bar ───────────────────────────────────────────────────
+  doc.setFillColor(...C.navy);
+  doc.rect(ML, y, CW, 7, 'F');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
-  const colW = (PW - 20) / summaryItems.length;
-  summaryItems.forEach(([label, val], i) => {
-    const cx = 10 + colW * i + colW / 2;
+  doc.setTextColor(...C.white);
+  doc.text('RESULT SUMMARY', PW / 2, y + 4.7, { align: 'center' });
+
+  y += 7;
+  const summaryItems = [
+    ['Total Courses',    safe(stats.totalCourses, String(courses.length))],
+    ['Credit Hours',     safe(stats.totalCredits)],
+    ['Marks Obtained',   stats.totalMarks
+                           ? `${safe(stats.obtainedMarks)} / ${safe(stats.totalMarks)}`
+                           : '—'],
+    ['Percentage',       stats.percentage != null
+                           ? `${Number(stats.percentage).toFixed(2)}%`
+                           : '—'],
+    ['SGPA',             safe(stats.sgpa)],
+  ];
+  const SC = CW / summaryItems.length;
+  doc.setDrawColor(190, 190, 190);
+  doc.setLineWidth(0.3);
+  doc.rect(ML, y, CW, 15);
+
+  summaryItems.forEach(([lbl, val], i) => {
+    const sx = ML + SC * i;
+    if (i > 0) doc.line(sx, y, sx, y + 15);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 116, 139);
-    doc.text(label, cx, y + 9, { align: 'center' });
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.gray);
+    doc.text(lbl, sx + SC / 2, y + 4.5, { align: 'center' });
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(21, 128, 61); // green-700
     doc.setFontSize(11);
-    doc.text(val, cx, y + 18, { align: 'center' });
-    doc.setFontSize(8.5);
+    doc.setTextColor(...C.navy);
+    doc.text(String(val), sx + SC / 2, y + 12, { align: 'center' });
   });
 
-  y += 30;
+  y += 21;
 
-  // ── GPA Scale ────────────────────────────────────────────────────────────────
-  if (y < 240) {
+  // ── Grading scale + notes ────────────────────────────────────────────────
+  if (y + 46 < PH - 45) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('GPA Scale Reference', 10, y);
-    y += 4;
+    doc.setTextColor(...C.navy);
+    doc.text('GRADING SCALE (PSTU)', ML, y);
 
-    const scale = [
-      ['A+ (4.00)', '80-100%'], ['A (3.75)', '75-79%'], ['A- (3.50)', '70-74%'],
-      ['B+ (3.25)', '65-69%'],  ['B (3.00)',  '60-64%'], ['B- (2.75)', '55-59%'],
-      ['C+ (2.50)', '50-54%'],  ['C (2.25)',  '45-49%'], ['D (2.00)',  '40-44%'],
-      ['F (0.00)',  '0-39%'],
-    ];
-
-    const sColW = (PW - 20) / 5;
-    scale.forEach(([g, r], i) => {
-      const col = i % 5;
-      const row = Math.floor(i / 5);
-      const sx = 10 + col * sColW;
-      const sy = y + 5 + row * 6;
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(30, 41, 59);
-      doc.text(g, sx, sy);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(100, 116, 139);
-      doc.text(r, sx + 16, sy);
+    autoTable(doc, {
+      startY: y + 3,
+      head: [['Grade', 'Grade Point', 'Marks (%)']],
+      body: [
+        ['A+', '4.00', '80–100'], ['A',  '3.75', '75–79'], ['A-', '3.50', '70–74'],
+        ['B+', '3.25', '65–69'],  ['B',  '3.00', '60–64'], ['B-', '2.75', '55–59'],
+        ['C+', '2.50', '50–54'],  ['C',  '2.25', '45–49'], ['D',  '2.00', '40–44'],
+        ['F',  '0.00', '0–39'],
+      ],
+      theme: 'grid',
+      styles: {
+        fontSize: 7, cellPadding: 1.5, halign: 'center',
+        textColor: C.black, lineColor: [210, 210, 210], lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: [60, 60, 80], textColor: C.white,
+        fontStyle: 'bold', fontSize: 7.5, halign: 'center',
+      },
+      tableWidth: 62,
+      margin: { left: ML },
     });
-    y += 20;
+
+    // Notes beside the scale table
+    const nx = ML + 68;
+    let ny = y + 3;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...C.navy);
+    doc.text('Important Notes:', nx, ny);
+    const notes = [
+      '1. This is a provisional semester result sheet.',
+      '2. Official academic transcript is issued separately',
+      '   by the Controller of Examinations, PSTU.',
+      '3. Minimum CGPA for graduation: 2.00',
+      '4. Grade "F" denotes course failure (re-sit required).',
+      '5. Discrepancy queries: exam@pstu.ac.bd',
+    ];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.gray);
+    notes.forEach((note, i) => doc.text(note, nx, ny + 7 + i * 5));
+
+    y = Math.max(doc.lastAutoTable.finalY, y + 46) + 6;
   }
 
-  // ── Footer ───────────────────────────────────────────────────────────────────
-  const footerY = doc.internal.pageSize.getHeight() - 20;
-  doc.setDrawColor(203, 213, 225);
-  doc.line(10, footerY - 3, PW - 10, footerY - 3);
+  // ── Signature block ──────────────────────────────────────────────────────
+  const sigY = Math.max(y, PH - 50);
+  doc.setDrawColor(150, 150, 150);
+  doc.setLineWidth(0.4);
+
+  doc.line(ML, sigY, ML + 62, sigY);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.black);
+  doc.text('Head of Department', ML, sigY + 5);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.setTextColor(148, 163, 184);
-  doc.text('Controller of Examinations — Patuakhali Science and Technology University', 10, footerY + 2);
-  doc.text('This is a computer-generated document.', PW - 10, footerY + 2, { align: 'right' });
+  doc.setTextColor(...C.gray);
+  doc.text(safe(student.faculty, 'Department'), ML, sigY + 10);
+  doc.text('Patuakhali Science and Technology University', ML, sigY + 14.5);
 
-  // ── Signature placeholder ────────────────────────────────────────────────────
-  doc.setDrawColor(203, 213, 225);
-  doc.line(PW - 60, footerY - 10, PW - 10, footerY - 10);
-  doc.setFontSize(7);
-  doc.setTextColor(148, 163, 184);
-  doc.text('Authorized Signature', PW - 35, footerY - 6, { align: 'center' });
+  const rsigX = ML + CW - 65;
+  doc.line(rsigX, sigY, ML + CW, sigY);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...C.black);
+  doc.text('Controller of Examinations', rsigX, sigY + 5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...C.gray);
+  doc.text('Examination Division', rsigX, sigY + 10);
+  doc.text('Patuakhali Science and Technology University', rsigX, sigY + 14.5);
 
-  const filename = `Marksheet_${student.registrationNumber || student._id}_Sem${data.semester}.pdf`;
-  doc.save(filename);
+  // ── Footer ───────────────────────────────────────────────────────────────
+  const ftY = PH - 16;
+  doc.setDrawColor(150, 150, 150);
+  doc.setLineWidth(0.3);
+  doc.line(ML, ftY, ML + CW, ftY);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(6.8);
+  doc.setTextColor(...C.lgray);
+  doc.text(
+    'This document is generated electronically. Unauthorized alteration is a punishable offence under the laws of Bangladesh.',
+    PW / 2, ftY + 4.5, { align: 'center' }
+  );
+  doc.text(
+    `Ref: ${docNo}  ·  Generated: ${now.toLocaleString('en-BD')}  ·  PSTU Campus Portal`,
+    PW / 2, ftY + 9, { align: 'center' }
+  );
+
+  const reg = safe(student.registrationNumber || student.studentId, 'NA').replace(/[/\\:*?<>|]/g, '-');
+  doc.save(`PSTU_Result_${reg}_Sem${sem}.pdf`);
 }

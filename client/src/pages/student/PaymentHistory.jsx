@@ -28,7 +28,7 @@ export default function PaymentHistory() {
     try {
       // Fetch full payment with populated student/faculty
       const full = await paymentService.getPaymentByTranId(payment.tranId);
-      generateReceiptPDF(full);
+      await generateReceiptPDF(full);
     } catch {
       alert('Failed to download receipt.');
     } finally {

@@ -22,7 +22,7 @@ export default function PaymentSuccess() {
   const handleDownload = async () => {
     if (!payment) return;
     setDownloading(true);
-    try { generateReceiptPDF(payment); }
+    try { await generateReceiptPDF(payment); }
     catch { alert('Failed to generate receipt.'); }
     finally { setDownloading(false); }
   };
