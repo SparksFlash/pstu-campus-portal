@@ -5,6 +5,9 @@ const paymentService = {
   getFeeConfig: ()                        => api.get('/payments/fee-config'),
   setFeeConfig: (data)                    => api.post('/payments/fee-config', data),
 
+  // Dynamic fee breakdown based on semester courses
+  getFeeBreakdown: (semester) => api.get(`/payments/fee-breakdown/${semester}`),
+
   // Initiate payment — returns { GatewayPageURL, tranId }
   initiatePayment: (semester, academicYear) =>
     api.post('/payments/initiate', { semester, academicYear }),

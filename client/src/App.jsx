@@ -24,7 +24,6 @@ import TeacherWorkflow from './pages/teacher/TeacherWorkflow';
 import ResultPublish from './pages/teacher/ResultPublish';
 import BulkCSVImport from './pages/teacher/BulkCSVImport';
 import StudentResults from './pages/student/StudentResults';
-import CourseEnrollment from './pages/student/CourseEnrollment';
 import NoticeBoard from './pages/common/NoticeBoard';
 import BusSchedule from './pages/common/BusSchedule';
 import PhoneDiary from './pages/common/PhoneDiary';
@@ -90,7 +89,6 @@ function App() {
               <Route path="/student/dashboard" element={<ProtectedRoute requiredRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
               <Route path="/student/overview" element={<ProtectedRoute requiredRoles={['student']}><StudentOverview /></ProtectedRoute>} />
               <Route path="/student/results"      element={<ProtectedRoute requiredRoles={['student']}><StudentResults /></ProtectedRoute>} />
-              <Route path="/student/enrollments"      element={<ProtectedRoute requiredRoles={['student']}><CourseEnrollment /></ProtectedRoute>} />
               <Route path="/student/payments"         element={<ProtectedRoute requiredRoles={['student']}><PaymentGateway /></ProtectedRoute>} />
               <Route path="/student/payments/history" element={<ProtectedRoute requiredRoles={['student']}><PaymentHistory /></ProtectedRoute>} />
               {/* Payment callback landing pages — no auth wrapper, accessed via browser redirect */}

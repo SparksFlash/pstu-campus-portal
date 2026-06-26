@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   FiHome, FiUsers, FiBook, FiBarChart2, FiBell,
   FiTruck, FiPhone, FiGrid, FiShield, FiCheckSquare,
-  FiUpload, FiBookOpen, FiX, FiCreditCard, FiList, FiLayout, FiGlobe, FiCalendar,
+  FiUpload, FiX, FiCreditCard, FiList, FiLayout, FiGlobe, FiCalendar,
 } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { useApp } from '../hooks/useApp';
@@ -58,11 +58,10 @@ const Sidebar = () => {
 
   if (user?.role === 'student') {
     menuItems.push(
-      { label: 'Overview',        path: '/student/overview',        icon: FiLayout     },
-      { label: 'My Results',      path: '/student/results',         icon: FiBarChart2  },
-      { label: 'Enrollment',      path: '/student/enrollments',     icon: FiBookOpen   },
-      { label: 'Pay Fees',        path: '/student/payments',        icon: FiCreditCard },
-      { label: 'Payment History', path: '/student/payments/history', icon: FiList      },
+      { label: 'Overview',        path: '/student/overview',         icon: FiLayout     },
+      { label: 'My Results',      path: '/student/results',          icon: FiBarChart2  },
+      { label: 'Pay Fees',        path: '/student/payments',         icon: FiCreditCard },
+      { label: 'Payment History', path: '/student/payments/history', icon: FiList       },
     );
   }
 

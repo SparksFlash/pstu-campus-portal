@@ -2,7 +2,28 @@ const SSLCommerzPayment = require('sslcommerz-lts');
 const { v4: uuidv4 }   = require('uuid');
 const Payment           = require('../models/Payment');
 const FeeConfig         = require('../models/FeeConfig');
+const Course            = require('../models/Course');
 const User              = require('../models/User');
+const { SEMESTER_FEE }  = require('../config/constants');
+
+// ── Dynamic fee calculator ────────────────────────────────────────────
+async function calculateSemesterFee(semester, facultyId) {
+  const courses      = await Course.find({ semester: parseInt(semester), faculty: facultyId }).select('creditHours');
+  const totalCredits = courses.reduce((s, c) => s + (c.creditHours || 0), 0);
+  if (totalCredits === 0) return null;
+  const creditFee = totalCredits * SEMESTER_FEE.creditHourRate;
+  const total     = creditFee + SEMESTER_FEE.admissionFee + SEMESTER_FEE.enrollmentFee
+                    + SEMESTER_FEE.hallFee + SEMESTER_FEE.cseClubFee;
+  return {
+    totalCredits,
+    creditFee,
+    admissionFee:  SEMESTER_FEE.admissionFee,
+    enrollmentFee: SEMESTER_FEE.enrollmentFee,
+    hallFee:       SEMESTER_FEE.hallFee,
+    cseClubFee:    SEMESTER_FEE.cseClubFee,
+    total,
+  };
+}
 
 const STORE_ID   = process.env.SSLC_STORE_ID;
 const STORE_PASS = process.env.SSLC_STORE_PASS;
@@ -47,11 +68,11 @@ exports.initiatePayment = async (req, res) => {
     const student = await User.findById(req.user._id).populate('faculty', 'name');
     if (!student) return res.status(404).json({ message: 'Student not found' });
 
-    // Get fee for this semester
-    const feeConfig = await FeeConfig.findOne({ semester });
-    if (!feeConfig) {
+    // Calculate fee dynamically from courses in this semester
+    const breakdown = await calculateSemesterFee(semester, student.faculty?._id || student.faculty);
+    if (!breakdown) {
       return res.status(400).json({
-        message: `Fee not configured for Semester ${semester}. Please contact admin.`,
+        message: `No courses found for Semester ${semester}. Please contact admin.`,
       });
     }
 
@@ -65,8 +86,7 @@ exports.initiatePayment = async (req, res) => {
       if (existing.status === 'completed') {
         return res.status(400).json({ message: `Semester ${semester} fee already paid.`, payment: existing });
       }
-      // Pending — return existing gateway URL by re-initiating (old pending may have expired)
-      // Delete the stale pending and let a new one be created
+      // Stale pending — delete and recreate with fresh amount
       await Payment.deleteOne({ _id: existing._id });
     }
 
@@ -78,7 +98,7 @@ exports.initiatePayment = async (req, res) => {
       faculty:      student.faculty?._id || student.faculty,
       semester,
       academicYear: academicYear || String(new Date().getFullYear()),
-      amount:       feeConfig.amount,
+      amount:       breakdown.total,
       currency:     'BDT',
       purpose:      'semester_fee',
       status:       'pending',
@@ -87,7 +107,7 @@ exports.initiatePayment = async (req, res) => {
 
     // Build SSLCommerz payload
     const sslData = {
-      total_amount:     feeConfig.amount,
+      total_amount:     breakdown.total,
       currency:         'BDT',
       tran_id:          tranId,
       success_url:      `${SERVER_URL}/api/v1/payments/success`,
@@ -249,15 +269,27 @@ exports.getPaymentByTranId = async (req, res) => {
 exports.getSemesterPaymentStatus = async (req, res) => {
   try {
     const { semester } = req.params;
-    const [payment, feeConfig] = await Promise.all([
+    const [payment, breakdown] = await Promise.all([
       Payment.findOne({ student: req.user._id, semester, status: 'completed' }),
-      FeeConfig.findOne({ semester }),
+      calculateSemesterFee(semester, req.user.faculty),
     ]);
     res.json({
-      paid:      !!payment,
-      payment:   payment || null,
-      feeConfig: feeConfig || null,
+      paid:        !!payment,
+      payment:     payment || null,
+      feeBreakdown: breakdown || null,
     });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getFeeBreakdown = async (req, res) => {
+  try {
+    const breakdown = await calculateSemesterFee(req.params.semester, req.user.faculty);
+    if (!breakdown) {
+      return res.status(404).json({ message: `No courses configured for Semester ${req.params.semester} yet.` });
+    }
+    res.json(breakdown);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

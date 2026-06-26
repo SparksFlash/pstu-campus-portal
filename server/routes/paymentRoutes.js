@@ -16,6 +16,7 @@ router.post('/ipn',     ctrl.handleIPN);
 
 // ── Student endpoints ─────────────────────────────────────────────────
 router.post('/initiate',                    auth, allowRoles('student'), ctrl.initiatePayment);
+router.get('/fee-breakdown/:semester',      auth, allowRoles('student'), ctrl.getFeeBreakdown);
 router.get('/my',                           auth, allowRoles('student'), ctrl.getMyPayments);
 router.get('/by-tran/:tranId',              auth, allowRoles('student'), ctrl.getPaymentByTranId);
 router.get('/semester-status/:semester',    auth, allowRoles('student'), ctrl.getSemesterPaymentStatus);
