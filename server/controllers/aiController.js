@@ -1,10 +1,59 @@
 const { groqChat }   = require('../utils/embeddings');
 const Notice         = require('../models/Notice');
 const Course         = require('../models/Course');
+const Faculty        = require('../models/Faculty');
 const ClassRoutine   = require('../models/ClassRoutine');
 const Result         = require('../models/Result');
 const User           = require('../models/User');
 const Institution    = require('../models/Institution');
+const { SEMESTER_FEE } = require('../config/constants');
+
+// Build system-wide context: all courses grouped by faculty/semester + latest notices
+async function buildSystemContext() {
+  const [courses, notices] = await Promise.all([
+    Course.find()
+      .populate('faculty', 'name')
+      .populate('teacher', 'name')
+      .select('code title faculty semester creditHours teacher'),
+    Notice.find({ isActive: true })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('title content createdAt'),
+  ]);
+
+  // Group: facultyName → semester → formatted course lines
+  const grouped = {};
+  for (const c of courses) {
+    const fac = c.faculty?.name || 'Unassigned';
+    const sem = String(c.semester || '?');
+    if (!grouped[fac]) grouped[fac] = {};
+    if (!grouped[fac][sem]) grouped[fac][sem] = [];
+    const teacherPart = c.teacher?.name ? `, Teacher: ${c.teacher.name}` : '';
+    grouped[fac][sem].push(`${c.code} - ${c.title} (${c.creditHours || 0} credit hours${teacherPart})`);
+  }
+
+  const courseText = Object.entries(grouped).map(([fac, sems]) => {
+    const semLines = Object.entries(sems)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([sem, items]) => {
+        const totalCr = items.reduce((s, line) => {
+          const m = line.match(/\((\d+(?:\.\d+)?) credit/);
+          return s + (m ? parseFloat(m[1]) : 0);
+        }, 0);
+        return `  Semester ${sem} (${totalCr} total credits):\n` +
+               items.map(i => `    - ${i}`).join('\n');
+      }).join('\n');
+    return `### ${fac}\n${semLines}`;
+  }).join('\n\n');
+
+  const noticeText = notices.length
+    ? notices.map(n =>
+        `• [${new Date(n.createdAt).toLocaleDateString('en-BD')}] ${n.title}: ${String(n.content).slice(0, 250)}`
+      ).join('\n')
+    : 'No active notices.';
+
+  return { courseText, noticeText, totalCourses: courses.length };
+}
 
 // Build user-specific personal context from DB
 async function buildPersonalContext(user) {
@@ -26,24 +75,47 @@ async function buildPersonalContext(user) {
       .filter(e => e.day === todayName)
       .map(e => `${e.timeSlot}: ${e.courseCode} - ${e.courseTitle} (${e.room || 'TBA'})`);
 
-    const courses = await Course.find({ faculty: facultyId, semester: user.semester }).select('code title');
+    const courses = await Course.find({ faculty: facultyId, semester: user.semester }).select('code title creditHours');
+
+    // Calculate semester fee from credit hours
+    let feeBreakdown = null;
+    if (facultyId && user.semester) {
+      const totalCredits = courses.reduce((s, c) => s + (c.creditHours || 0), 0);
+      if (totalCredits > 0) {
+        const creditFee = totalCredits * SEMESTER_FEE.creditHourRate;
+        feeBreakdown = {
+          totalCredits,
+          creditFee,
+          admissionFee:   SEMESTER_FEE.admissionFee,
+          enrollmentFee:  SEMESTER_FEE.enrollmentFee,
+          hallFee:        SEMESTER_FEE.hallFee,
+          cseClubFee:     SEMESTER_FEE.cseClubFee,
+          grandTotal:     creditFee + SEMESTER_FEE.admissionFee + SEMESTER_FEE.enrollmentFee
+                          + SEMESTER_FEE.hallFee + SEMESTER_FEE.cseClubFee,
+        };
+      }
+    }
 
     Object.assign(ctx, {
-      semester:     user.semester,
-      faculty:      user.faculty?.name || 'N/A',
-      cgpa:         cgpa || 'No results yet',
-      semesterGPAs: results.map(r => `Sem ${r.semester}: GPA ${r.gpa || 'N/A'}`),
-      todayClasses: todayClasses.length ? todayClasses : ['No classes today'],
-      enrolledCourses: courses.map(c => `${c.code} - ${c.title}`),
+      semester:        user.semester,
+      faculty:         user.faculty?.name || 'N/A',
+      cgpa:            cgpa || 'No results yet',
+      semesterGPAs:    results.map(r => `Sem ${r.semester}: GPA ${r.gpa || 'N/A'}`),
+      todayClasses:    todayClasses.length ? todayClasses : ['No classes today'],
+      enrolledCourses: courses.map(c => `${c.code} - ${c.title} (${c.creditHours} cr)`),
+      semesterFee:     feeBreakdown
+        ? `BDT ${feeBreakdown.grandTotal} (${feeBreakdown.totalCredits} credits × ${SEMESTER_FEE.creditHourRate} + fees)`
+        : 'Not available (no courses configured for this semester)',
+      feeBreakdown,
     });
 
   } else if (user.role === 'teacher') {
     const courses = await Course.find({ teacher: user._id }).select('code title semester').populate('faculty', 'name');
     const studentCount = await User.countDocuments({ role: 'student', faculty: user.faculty });
     Object.assign(ctx, {
-      faculty:      user.faculty?.name || 'N/A',
-      teachingCourses: courses.map(c => `${c.code} - ${c.title} (Sem ${c.semester})`),
-      totalStudentsInFaculty: studentCount,
+      faculty:                 user.faculty?.name || 'N/A',
+      teachingCourses:         courses.map(c => `${c.code} - ${c.title} (Sem ${c.semester})`),
+      totalStudentsInFaculty:  studentCount,
     });
 
   } else if (user.role === 'admin') {
@@ -80,32 +152,26 @@ exports.chat = async (req, res) => {
       return res.status(503).json({ message: 'AI service not configured.' });
     }
 
-    // 1. Fetch relevant notices (latest 5 active)
-    const notices = await Notice.find({ isActive: true })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select('title content createdAt');
+    // Fetch system context (all courses + notices) and personal context in parallel
+    const [{ courseText, noticeText, totalCourses }, personal] = await Promise.all([
+      buildSystemContext(),
+      buildPersonalContext(req.user),
+    ]);
 
-    // 2. Personal context from DB
-    const personal = await buildPersonalContext(req.user);
-
-    // 3. Build system prompt
-    const noticeContext = notices.length
-      ? notices.map(n => `• ${n.title}: ${String(n.content).slice(0, 200)}`).join('\n')
-      : 'No active notices.';
-
-    const systemPrompt = `You are PSTU Campus AI Assistant for Patuakhali Science and Technology University, Bangladesh.
+    const systemPrompt = `You are PSTU Campus AI Assistant for Patuakhali Science and Technology University (PSTU), Bangladesh.
 Always respond in the SAME LANGUAGE the user writes in — Bengali (বাংলা) or English. If they mix, you mix too.
 Be friendly, helpful, and concise. Use ONLY the provided context to answer. Do not make up information.
 If you don't have the answer in the context, say so honestly.
 
-## Latest Notices from Portal:
-${noticeContext}
+## University Course Catalogue (${totalCourses} total courses):
+${courseText || 'No courses in system yet.'}
 
-## Current User's Data:
+## Latest Notices (up to 10):
+${noticeText}
+
+## Current User's Personal Data:
 ${JSON.stringify(personal, null, 2)}`;
 
-    // 4. Generate response via Groq
     const reply = await groqChat(systemPrompt, message);
 
     res.json({ reply });

@@ -6,7 +6,7 @@ import NoticeCarousel from '../../components/NoticeCarousel';
 import studentService from '../../services/studentService';
 import { useAuth } from '../../hooks/useAuth';
 import { formatCGPA } from '../../utils/formatters';
-import { FiBookOpen, FiCheckSquare, FiLayers, FiBarChart2, FiArrowRight } from 'react-icons/fi';
+import { FiBookOpen, FiCheckSquare, FiLayers, FiBarChart2, FiCreditCard, FiArrowRight } from 'react-icons/fi';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -96,7 +96,7 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Link
             to="/student/results"
-            className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition group"
+            className="flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-5 shadow-sm hover:shadow-md transition group"
           >
             <div className="flex items-center gap-3">
               <div className="bg-primary-100 p-2.5 rounded-lg">
@@ -111,19 +111,19 @@ export default function StudentDashboard() {
           </Link>
 
           <Link
-            to="/student/enrollments"
-            className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition group"
+            to="/student/payments"
+            className="flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-5 shadow-sm hover:shadow-md transition group"
           >
             <div className="flex items-center gap-3">
-              <div className="bg-secondary-100 p-2.5 rounded-lg">
-                <FiBookOpen size={20} className="text-secondary-600" />
+              <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2.5 rounded-lg">
+                <FiCreditCard size={20} className="text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="font-semibold text-gray-800">Course Enrollment</p>
-                <p className="text-xs text-gray-500">Enroll in or drop courses</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">Pay Semester Fee</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">View breakdown and pay online</p>
               </div>
             </div>
-            <FiArrowRight size={18} className="text-gray-300 group-hover:text-secondary-500 transition" />
+            <FiArrowRight size={18} className="text-gray-300 group-hover:text-emerald-500 transition" />
           </Link>
         </div>
       </div>
