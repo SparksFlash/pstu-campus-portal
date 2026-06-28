@@ -20,7 +20,7 @@ exports.registerSchema = Joi.object({
 exports.loginSchema = Joi.object({
   email: Joi.string().email().lowercase().allow('').optional(),
   password: Joi.string().required(),
-  role: Joi.string().valid('student', 'teacher', 'admin').allow('').optional(),
+  role: Joi.string().valid('student', 'teacher', 'admin', 'superadmin').allow('').optional(),
   registrationNumber: Joi.string().allow('').optional(),
   studentId: Joi.string().allow('').optional(),
   faculty: Joi.alternatives()
