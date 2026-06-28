@@ -5,7 +5,7 @@ const allowRoles = require('../middleware/roleAuth');
 const { register, getAll, updateStatus } = require('../controllers/institutionController');
 
 router.post('/', register);
-router.get('/', auth, allowRoles('admin'), getAll);
-router.patch('/:id/status', auth, allowRoles('admin'), updateStatus);
+router.get('/', auth, allowRoles('superadmin'), getAll);
+router.patch('/:id/status', auth, allowRoles('superadmin'), updateStatus);
 
 module.exports = router;

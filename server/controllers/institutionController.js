@@ -1,4 +1,5 @@
 const Institution = require('../models/Institution');
+const AuditLog = require('../models/AuditLog');
 
 // POST /api/v1/institutions  — public, no auth
 exports.register = async (req, res) => {
@@ -42,6 +43,13 @@ exports.updateStatus = async (req, res) => {
       { new: true }
     );
     if (!institution) return res.status(404).json({ message: 'Institution not found.' });
+    AuditLog.create({
+      actor: req.user._id, actorRole: req.user.role,
+      action: status === 'Active' ? 'APPROVE_INSTITUTION' : 'REJECT_INSTITUTION',
+      resource: 'Institution', resourceId: institution._id,
+      after: { status, universityName: institution.universityName },
+      ipAddress: req.ip, userAgent: req.headers['user-agent'],
+    }).catch(() => {});
     res.json({ message: `Institution ${status.toLowerCase()} successfully.`, institution });
   } catch (err) {
     console.error('Institution updateStatus error:', err.message);

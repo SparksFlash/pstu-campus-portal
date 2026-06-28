@@ -9,8 +9,8 @@ const {
 
 router.get('/', getAllContacts);
 router.get('/:id', getContactById);
-router.post('/', auth, allowRoles('admin'), requireFields('phone'), createContact);
-router.put('/:id', auth, allowRoles('admin'), updateContact);
-router.delete('/:id', auth, allowRoles('admin'), deleteContact);
+router.post('/', auth, allowRoles('admin', 'superadmin'), requireFields('phone'), createContact);
+router.put('/:id', auth, allowRoles('admin', 'superadmin'), updateContact);
+router.delete('/:id', auth, allowRoles('admin', 'superadmin'), deleteContact);
 
 module.exports = router;

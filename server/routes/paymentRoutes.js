@@ -6,7 +6,7 @@ const ctrl       = require('../controllers/paymentController');
 
 // ── Fee config ────────────────────────────────────────────────────────
 router.get('/fee-config',  auth, ctrl.getFeeConfig);
-router.post('/fee-config', auth, allowRoles('admin'), ctrl.setFeeConfig);
+router.post('/fee-config', auth, allowRoles('admin', 'superadmin'), ctrl.setFeeConfig);
 
 // ── SSLCommerz gateway callbacks (NO auth — browser POST redirect) ────
 router.post('/success', ctrl.handleSuccess);
@@ -22,7 +22,7 @@ router.get('/by-tran/:tranId',              auth, allowRoles('student'), ctrl.ge
 router.get('/semester-status/:semester',    auth, allowRoles('student'), ctrl.getSemesterPaymentStatus);
 
 // ── Admin endpoints ───────────────────────────────────────────────────
-router.get('/admin/all',   auth, allowRoles('admin'), ctrl.getAllPayments);
-router.get('/admin/stats', auth, allowRoles('admin'), ctrl.getPaymentStats);
+router.get('/admin/all',   auth, allowRoles('admin', 'superadmin'), ctrl.getAllPayments);
+router.get('/admin/stats', auth, allowRoles('admin', 'superadmin'), ctrl.getPaymentStats);
 
 module.exports = router;

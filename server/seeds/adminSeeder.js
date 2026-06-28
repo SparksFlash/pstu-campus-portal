@@ -35,6 +35,19 @@ const seedDatabase = async () => {
     await adminUser.save();
     console.log('Admin user created');
 
+    // Create Superadmin (platform owner)
+    const superadmin = new User({
+      name: 'Platform Owner',
+      email: 'superadmin@pstu.edu',
+      password: 'SuperAdmin@123',
+      role: 'superadmin',
+      faculty: faculties[0]._id,
+      phone: '01700000000'
+    });
+    superadmin.isVerified = true;
+    await superadmin.save();
+    console.log('Superadmin user created');
+
     // Create Sample Teacher & Student
     const teacher = new User({
       name: 'Dr. Mohammad Ahmed',

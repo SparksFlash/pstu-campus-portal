@@ -9,8 +9,8 @@ const {
 
 router.get('/', getAllFaculties);
 router.get('/:id', getFacultyById);
-router.post('/', auth, allowRoles('admin'), requireFields('name', 'code'), createFaculty);
-router.put('/:id', auth, allowRoles('admin'), updateFaculty);
-router.delete('/:id', auth, allowRoles('admin'), deleteFaculty);
+router.post('/', auth, allowRoles('admin', 'superadmin'), requireFields('name', 'code'), createFaculty);
+router.put('/:id', auth, allowRoles('admin', 'superadmin'), updateFaculty);
+router.delete('/:id', auth, allowRoles('admin', 'superadmin'), deleteFaculty);
 
 module.exports = router;

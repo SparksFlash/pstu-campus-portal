@@ -1,6 +1,7 @@
 const Grade = require('../models/Grade');
 const Course = require('../models/Course');
 const User = require('../models/User');
+const AuditLog = require('../models/AuditLog');
 const { getGradeForPercentage, calculatePercentage } = require('../utils/gradingScale');
 
 exports.getAllGrades = async (req, res) => {
@@ -44,6 +45,14 @@ exports.addGrade = async (req, res) => {
     } else {
       grade = new Grade({ student, course, faculty, semester, obtainedMarks, totalMarks, percentage, grade: gradePoint, gpa, teacher });
       await grade.save();
+    }
+    if (req.user) {
+      AuditLog.create({
+        actor: req.user._id, actorRole: req.user.role,
+        action: 'ENTER_GRADES', resource: 'Grade', resourceId: grade._id,
+        after: { student, course, semester, obtainedMarks, totalMarks, gradePoint },
+        ipAddress: req.ip, userAgent: req.headers['user-agent'],
+      }).catch(() => {});
     }
     res.status(201).json(grade);
   } catch (err) {

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
+const AuditLog = require('../models/AuditLog');
 const { sendEmail } = require('../utils/emailService');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -21,7 +22,7 @@ exports.register = async (req, res) => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		if (!emailRegex.test(email)) return res.status(400).json({ message: 'Invalid email' });
 		if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
-		if (!['student', 'teacher', 'admin'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
+		if (!['student', 'teacher', 'admin', 'superadmin'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
 
 		if (role === 'student' && !registrationNumber && !studentId) {
 			return res.status(400).json({ message: 'Students must provide registrationNumber or studentId' });
@@ -45,6 +46,12 @@ exports.register = async (req, res) => {
 			isVerified: false, verificationToken, verificationTokenExpires,
 		});
 		await user.save();
+		AuditLog.create({
+			actor: user._id, actorRole: user.role,
+			action: 'REGISTER_USER', resource: 'User', resourceId: user._id,
+			after: { name, email, role },
+			ipAddress: req.ip, userAgent: req.headers['user-agent'],
+		}).catch(() => {});
 
 		const SERVER_URL = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
 		const CLIENT_URL_LOCAL = process.env.CLIENT_URL || 'http://localhost:3000';

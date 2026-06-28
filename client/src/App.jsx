@@ -68,13 +68,13 @@ function App() {
 
               {/* Admin routes */}
               <Route path="/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/dashboard" element={<ProtectedRoute requiredRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/courses"   element={<ProtectedRoute requiredRoles={['admin']}><CourseManagement /></ProtectedRoute>} />
-              <Route path="/admin/users"     element={<ProtectedRoute requiredRoles={['admin']}><UserManagement /></ProtectedRoute>} />
-              <Route path="/admin/faculties" element={<ProtectedRoute requiredRoles={['admin']}><FacultyManagement /></ProtectedRoute>} />
-              <Route path="/admin/audit-logs" element={<ProtectedRoute requiredRoles={['admin']}><AuditLog /></ProtectedRoute>} />
-              <Route path="/admin/payments"  element={<ProtectedRoute requiredRoles={['admin']}><PaymentDashboard /></ProtectedRoute>} />
-              <Route path="/superadmin/institutions" element={<ProtectedRoute requiredRoles={['admin']}><InstitutionList /></ProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<ProtectedRoute requiredRoles={['admin','superadmin']}><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/courses"   element={<ProtectedRoute requiredRoles={['admin','superadmin']}><CourseManagement /></ProtectedRoute>} />
+              <Route path="/admin/users"     element={<ProtectedRoute requiredRoles={['admin','superadmin']}><UserManagement /></ProtectedRoute>} />
+              <Route path="/admin/faculties" element={<ProtectedRoute requiredRoles={['admin','superadmin']}><FacultyManagement /></ProtectedRoute>} />
+              <Route path="/admin/audit-logs" element={<ProtectedRoute requiredRoles={['admin','superadmin']}><AuditLog /></ProtectedRoute>} />
+              <Route path="/admin/payments"  element={<ProtectedRoute requiredRoles={['admin','superadmin']}><PaymentDashboard /></ProtectedRoute>} />
+              <Route path="/superadmin/institutions" element={<ProtectedRoute requiredRoles={['superadmin']}><InstitutionList /></ProtectedRoute>} />
 
               {/* Teacher routes */}
               <Route path="/teacher/dashboard" element={<ProtectedRoute requiredRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />

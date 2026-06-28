@@ -1,5 +1,6 @@
 const Notice = require('../models/Notice');
 const User   = require('../models/User');
+const AuditLog = require('../models/AuditLog');
 const { notifyMany } = require('../utils/notify');
 const { getEmbedding } = require('../utils/embeddings');
 
@@ -60,7 +61,13 @@ exports.createNotice = async (req, res) => {
       meta:  { noticeId: notice._id },
     }).catch(() => {});
 
-    embedNotice(notice);  // async, doesn't block response
+    embedNotice(notice);
+    AuditLog.create({
+      actor: req.user._id, actorRole: req.user.role,
+      action: 'CREATE_NOTICE', resource: 'Notice', resourceId: notice._id,
+      after: { title },
+      ipAddress: req.ip, userAgent: req.headers['user-agent'],
+    }).catch(() => {});
     res.status(201).json(notice);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -82,6 +89,12 @@ exports.deleteNotice = async (req, res) => {
   try {
     const notice = await Notice.findByIdAndDelete(req.params.id);
     if (!notice) return res.status(404).json({ message: 'Notice not found' });
+    AuditLog.create({
+      actor: req.user._id, actorRole: req.user.role,
+      action: 'DELETE_NOTICE', resource: 'Notice', resourceId: req.params.id,
+      before: { title: notice.title },
+      ipAddress: req.ip, userAgent: req.headers['user-agent'],
+    }).catch(() => {});
     res.json({ message: 'Notice deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

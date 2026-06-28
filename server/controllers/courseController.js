@@ -1,4 +1,5 @@
 const Course = require('../models/Course');
+const AuditLog = require('../models/AuditLog');
 const { getEmbedding } = require('../utils/embeddings');
 
 const embedCourse = (course) => {
@@ -38,6 +39,12 @@ exports.createCourse = async (req, res) => {
     const course = new Course({ code, title, faculty, semester, creditHours, teacher });
     await course.save();
     embedCourse(course);
+    AuditLog.create({
+      actor: req.user._id, actorRole: req.user.role,
+      action: 'CREATE_COURSE', resource: 'Course', resourceId: course._id,
+      after: { code, title, semester, creditHours },
+      ipAddress: req.ip, userAgent: req.headers['user-agent'],
+    }).catch(() => {});
     res.status(201).json(course);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -59,6 +66,12 @@ exports.deleteCourse = async (req, res) => {
   try {
     const course = await Course.findByIdAndDelete(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
+    AuditLog.create({
+      actor: req.user._id, actorRole: req.user.role,
+      action: 'DELETE_COURSE', resource: 'Course', resourceId: req.params.id,
+      before: { code: course.code, title: course.title },
+      ipAddress: req.ip, userAgent: req.headers['user-agent'],
+    }).catch(() => {});
     res.json({ message: 'Course deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

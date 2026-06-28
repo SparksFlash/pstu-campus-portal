@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
 	password: { type: String, minlength: 6 },
 	googleId: { type: String, unique: true, sparse: true },
 	phone: String,
-	role: { type: String, enum: ['student', 'teacher', 'admin'], required: true },
+	role: { type: String, enum: ['student', 'teacher', 'admin', 'superadmin'], required: true },
 	faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
 	profilePicture: String,
 	address: String,

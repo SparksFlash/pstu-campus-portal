@@ -14,9 +14,9 @@ router.get('/my-courses', auth, allowRoles('teacher'), getTeacherCourses); // Te
 router.get('/', getAllCourses);
 router.get('/:id', getCourseById);
 router.get('/:id/students', auth, getCourseStudents); // Get students in a course
-router.post('/', auth, allowRoles('admin', 'teacher'), requireFields('code', 'title', 'faculty', 'semester'), createCourse);
-router.put('/:id', auth, allowRoles('admin', 'teacher'), updateCourse);
-router.delete('/:id', auth, allowRoles('admin'), deleteCourse);
-router.post('/:id/enroll', auth, allowRoles('teacher', 'admin'), addStudentToCourse);
+router.post('/', auth, allowRoles('admin', 'superadmin', 'teacher'), requireFields('code', 'title', 'faculty', 'semester'), createCourse);
+router.put('/:id', auth, allowRoles('admin', 'superadmin', 'teacher'), updateCourse);
+router.delete('/:id', auth, allowRoles('admin', 'superadmin'), deleteCourse);
+router.post('/:id/enroll', auth, allowRoles('teacher', 'admin', 'superadmin'), addStudentToCourse);
 
 module.exports = router;

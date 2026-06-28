@@ -11,7 +11,7 @@ const {
 } = require('../controllers/adminController');
 
 // All admin routes require authentication + admin role
-router.use(auth, allowRoles('admin'));
+router.use(auth, allowRoles('admin', 'superadmin'));
 
 router.get('/stats', getDashboardStats);
 router.get('/audit-logs', getAuditLogs);
