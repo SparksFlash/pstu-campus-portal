@@ -86,7 +86,7 @@ const Login = () => {
       const response = await authService.login(creds);
       login(response.user, response.token);
       // redirect based on role
-      if (response.user.role === 'admin') navigate('/admin/dashboard');
+      if (response.user.role === 'admin' || response.user.role === 'superadmin') navigate('/admin/dashboard');
       else if (response.user.role === 'teacher') navigate('/teacher/dashboard');
       else navigate('/student/dashboard');
     } catch (err) {
@@ -102,7 +102,7 @@ const Login = () => {
     try {
       const response = await authService.googleAuth(credentialResponse.credential);
       login(response.user, response.token);
-      if (response.user.role === 'admin') navigate('/admin/dashboard');
+      if (response.user.role === 'admin' || response.user.role === 'superadmin') navigate('/admin/dashboard');
       else if (response.user.role === 'teacher') navigate('/teacher/dashboard');
       else navigate('/student/dashboard');
     } catch (err) {
@@ -142,6 +142,7 @@ const Login = () => {
               <option value="student">Student</option>
               <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
+              <option value="superadmin">Super Admin</option>
             </select>
           </div>
 
