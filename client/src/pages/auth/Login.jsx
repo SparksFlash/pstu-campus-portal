@@ -199,6 +199,9 @@ const Login = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               placeholder="Enter password"
             />
+            <p className="mt-1 text-xs text-gray-400 flex items-center gap-1">
+              🔒 Passwords are hashed with <strong>bcrypt</strong> (salt rounds: 10) — never stored in plain text
+            </p>
           </div>
 
           <div className="flex justify-end">

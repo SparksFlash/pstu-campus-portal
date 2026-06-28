@@ -41,13 +41,13 @@ const Sidebar = () => {
       { label: 'Courses',   path: '/admin/courses',   icon: FiBook       },
       { label: 'Faculties', path: '/admin/faculties', icon: FiGrid       },
       { label: 'Payments',  path: '/admin/payments',  icon: FiCreditCard },
-      { label: 'Audit Log', path: '/admin/audit-logs', icon: FiShield    },
     );
   }
 
   if (user?.role === 'superadmin') {
     menuItems.push(
-      { label: 'Institutions', path: '/superadmin/institutions', icon: FiGlobe },
+      { label: 'Audit Log',    path: '/admin/audit-logs',          icon: FiShield },
+      { label: 'Institutions', path: '/superadmin/institutions',   icon: FiGlobe  },
     );
   }
 
