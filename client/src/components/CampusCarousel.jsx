@@ -31,7 +31,7 @@ export default function CampusCarousel() {
   return (
     <div
       className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 select-none"
-      style={{ aspectRatio: '16/5' }}
+      style={{ aspectRatio: '16/7' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
