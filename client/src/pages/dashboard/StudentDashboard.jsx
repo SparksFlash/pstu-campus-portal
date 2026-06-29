@@ -25,6 +25,9 @@ export default function StudentDashboard() {
   return (
     <Layout>
       <div className="space-y-6">
+        {/* Campus image carousel — top of page */}
+        <CampusCarousel />
+
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Student Dashboard</h1>
@@ -89,9 +92,6 @@ export default function StudentDashboard() {
             </>
           )}
         </div>
-
-        {/* Campus image carousel */}
-        <CampusCarousel />
 
         {/* Notice Carousel */}
         <NoticeCarousel limit={5} />

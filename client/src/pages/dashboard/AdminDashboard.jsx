@@ -43,6 +43,9 @@ const AdminDashboard = () => {
   return (
     <Layout>
       <div className="space-y-8">
+        {/* Campus image carousel — top of page */}
+        <CampusCarousel />
+
         {/* Page header */}
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -62,9 +65,6 @@ const AdminDashboard = () => {
             : statCards.map((s) => <StatCard key={s.label} {...s} />)
           }
         </div>
-
-        {/* Campus image carousel */}
-        <CampusCarousel />
 
         {/* Notice Carousel */}
         <NoticeCarousel limit={5} />

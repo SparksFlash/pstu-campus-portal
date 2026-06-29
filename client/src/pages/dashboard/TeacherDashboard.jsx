@@ -21,6 +21,9 @@ const TeacherDashboard = () => {
   return (
     <Layout>
       <div className="space-y-6">
+        {/* Campus image carousel — top of page */}
+        <CampusCarousel />
+
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Teacher Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">Overview of your faculty and grading progress</p>
@@ -40,9 +43,6 @@ const TeacherDashboard = () => {
             </>
           )}
         </div>
-
-        {/* Campus image carousel */}
-        <CampusCarousel />
 
         {/* Notice Carousel */}
         <NoticeCarousel limit={5} />
