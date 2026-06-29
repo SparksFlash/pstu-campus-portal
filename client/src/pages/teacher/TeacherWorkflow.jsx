@@ -3,8 +3,8 @@ import Layout from '../../components/Layout';
 import { toast } from 'react-toastify';
 import teacherService from '../../services/teacherService';
 import { generateMarksheetPDF } from '../../utils/generateMarksheetPDF';
-import {
 import { semesterLabel } from '../../utils/formatters';
+import {
   FiChevronLeft, FiUsers, FiEdit3, FiDownload, FiSave, FiRefreshCw,
 } from 'react-icons/fi';
 

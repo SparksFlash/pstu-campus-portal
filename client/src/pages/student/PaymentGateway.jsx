@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import paymentService from '../../services/paymentService';
-import {
 import { semesterLabel } from '../../utils/formatters';
+import {
   FiCreditCard, FiCheckCircle, FiAlertCircle, FiLoader,
   FiDollarSign, FiInfo,
 } from 'react-icons/fi';

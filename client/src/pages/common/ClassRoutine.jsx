@@ -8,8 +8,8 @@ import { facultyService } from '../../services/facultyService';
 import { courseService } from '../../services/courseService';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
-import {
 import { semesterLabel } from '../../utils/formatters';
+import {
   FiCalendar, FiEdit3, FiPlus, FiTrash2, FiCheck,
 } from 'react-icons/fi';
 

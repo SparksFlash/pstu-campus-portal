@@ -5,8 +5,8 @@ import { courseService } from '../../services/courseService';
 import { facultyService } from '../../services/facultyService';
 import { userService } from '../../services/userService';
 import { toast } from 'react-toastify';
-import {
 import { semesterLabel } from '../../utils/formatters';
+import {
   FiBook, FiPlus, FiRefreshCw, FiEdit2, FiTrash2,
   FiChevronDown, FiChevronRight, FiSearch, FiX,
 } from 'react-icons/fi';

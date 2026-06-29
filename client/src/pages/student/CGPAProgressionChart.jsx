@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import {
 import { semesterLabel } from '../../utils/formatters';
+import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, ReferenceLine, Dot,
 } from 'recharts';
