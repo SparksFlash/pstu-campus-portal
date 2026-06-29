@@ -1,7 +1,6 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const mongoose = require('mongoose');
 
-// MongoDB Atlas Connection Configuration
 const connectDatabase = async () => {
   try {
     const uri = process.env.MONGODB_URI;
