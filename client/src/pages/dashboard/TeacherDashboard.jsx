@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { StatCard, StatCardSkeleton } from '../../components/ui/StatCard';
 import NoticeCarousel from '../../components/NoticeCarousel';
+import CampusCarousel from '../../components/CampusCarousel';
 import teacherService from '../../services/teacherService';
 import { FiUsers, FiBook, FiCheckSquare, FiClock, FiEdit3, FiUpload } from 'react-icons/fi';
 
@@ -39,6 +40,9 @@ const TeacherDashboard = () => {
             </>
           )}
         </div>
+
+        {/* Campus image carousel */}
+        <CampusCarousel />
 
         {/* Notice Carousel */}
         <NoticeCarousel limit={5} />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import StatCard, { StatCardSkeleton } from '../../components/ui/StatCard';
 import NoticeCarousel from '../../components/NoticeCarousel';
+import CampusCarousel from '../../components/CampusCarousel';
 import { adminService } from '../../services/adminService';
 import {
   FiUsers, FiBook, FiGrid, FiAward, FiBarChart2, FiFileText,
@@ -61,6 +62,9 @@ const AdminDashboard = () => {
             : statCards.map((s) => <StatCard key={s.label} {...s} />)
           }
         </div>
+
+        {/* Campus image carousel */}
+        <CampusCarousel />
 
         {/* Notice Carousel */}
         <NoticeCarousel limit={5} />
