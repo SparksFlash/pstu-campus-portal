@@ -4,6 +4,7 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { adminService } from '../../services/adminService';
 import { toast } from 'react-toastify';
 import { FiUsers, FiSearch, FiChevronLeft, FiChevronRight, FiRefreshCw, FiEdit2, FiX, FiCheck } from 'react-icons/fi';
+import { semesterLabel } from '../../utils/formatters';
 
 const roleBadge = {
   admin:   'bg-purple-100 text-purple-700',
@@ -55,7 +56,7 @@ const EditSemesterModal = ({ user, onSave, onClose }) => {
         >
           <option value="">— Not assigned —</option>
           {[1,2,3,4,5,6,7,8].map(s => (
-            <option key={s} value={s}>Semester {s}</option>
+            <option key={s} value={s}>{semesterLabel(s)}</option>
           ))}
         </select>
         <div className="flex gap-2 justify-end">

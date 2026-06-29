@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { FiCheckCircle, FiDownload, FiLoader, FiList } from 'react-icons/fi';
 import paymentService from '../../services/paymentService';
 import { generateReceiptPDF } from '../../utils/generateReceiptPDF';
+import { semesterLabel } from '../../utils/formatters';
 
 export default function PaymentSuccess() {
   const [searchParams]           = useSearchParams();
@@ -52,7 +53,7 @@ export default function PaymentSuccess() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Semester</span>
-              <span className="font-medium text-gray-800 dark:text-gray-200">Semester {payment.semester}</span>
+              <span className="font-medium text-gray-800 dark:text-gray-200">{semesterLabel(payment.semester)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Amount</span>

@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import { toast } from 'react-toastify';
 import teacherService from '../../services/teacherService';
 import { FiUpload, FiFile, FiX, FiCheck, FiAlertCircle, FiDownload } from 'react-icons/fi';
+import { semesterLabel } from '../../utils/formatters';
 
 // Simple client-side CSV parser
 function parseCSV(text) {
@@ -111,7 +112,7 @@ export default function BulkCSVImport() {
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-gray-700">Semester:</label>
             <select value={semester} onChange={(e) => setSemester(parseInt(e.target.value))} className="input w-36">
-              {[1,2,3,4,5,6,7,8].map((s) => <option key={s} value={s}>Semester {s}</option>)}
+              {[1,2,3,4,5,6,7,8].map((s) => <option key={s} value={s}>{semesterLabel(s)}</option>)}
             </select>
           </div>
         </div>
@@ -226,7 +227,7 @@ export default function BulkCSVImport() {
                 className="btn-primary flex items-center gap-2 disabled:opacity-50"
               >
                 <FiUpload size={15} />
-                {importing ? 'Importing…' : `Import ${validRows.length} valid row(s) to Semester ${semester}`}
+                {importing ? 'Importing…' : `Import ${validRows.length} valid row(s) to ${semesterLabel(semester)}`}
               </button>
             </div>
           </div>

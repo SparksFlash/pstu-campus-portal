@@ -1,5 +1,6 @@
 import React from 'react';
 import './styles/StudentList.css';
+import { semesterLabel } from '../../utils/formatters';
 
 export default function StudentList({ students, semester, onSelectStudent }) {
   return (
@@ -8,7 +9,7 @@ export default function StudentList({ students, semester, onSelectStudent }) {
         <div className="students-empty">
           <div className="students-empty-icon">👥</div>
           <h3>No Students Found</h3>
-          <p>No students enrolled in Semester {semester} under your faculty.</p>
+          <p>No students enrolled in {semesterLabel(semester)} under your faculty.</p>
         </div>
       ) : (
         <>

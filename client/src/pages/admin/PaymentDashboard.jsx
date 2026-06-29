@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FiLoader, FiCheckCircle, FiXCircle, FiClock, FiSlash, FiDollarSign, FiSettings, FiSave } from 'react-icons/fi';
 import paymentService from '../../services/paymentService';
+import { semesterLabel } from '../../utils/formatters';
 
 const STATUS_CFG = {
   completed: { label: 'Paid',      cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',   Icon: FiCheckCircle },
@@ -188,7 +189,7 @@ export default function PaymentDashboard() {
             className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">All Semesters</option>
-            {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+            {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>{semesterLabel(s)}</option>)}
           </select>
         </div>
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{total} record{total !== 1 ? 's' : ''} found</p>

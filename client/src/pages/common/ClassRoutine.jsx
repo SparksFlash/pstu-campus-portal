@@ -9,6 +9,7 @@ import { courseService } from '../../services/courseService';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
 import {
+import { semesterLabel } from '../../utils/formatters';
   FiCalendar, FiEdit3, FiPlus, FiTrash2, FiCheck,
 } from 'react-icons/fi';
 
@@ -299,7 +300,7 @@ export default function ClassRoutine() {
               className="input w-40"
             >
               <option value="">Select Semester</option>
-              {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+              {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>{semesterLabel(s)}</option>)}
             </select>
           </div>
         )}
@@ -308,7 +309,7 @@ export default function ClassRoutine() {
         {isStudent && selectedFaculty && selectedSemester && (
           <div className="bg-primary-50 border border-primary-100 rounded-xl px-4 py-3 text-sm text-primary-700 flex items-center gap-2">
             <FiCalendar size={14} />
-            Showing routine for <strong>{faculties.find(f => (f._id === selectedFaculty || f._id === user?.faculty?._id))?.name || 'your faculty'}</strong> — Semester {selectedSemester}
+            Showing routine for <strong>{faculties.find(f => (f._id === selectedFaculty || f._id === user?.faculty?._id))?.name || 'your faculty'}</strong> — {semesterLabel(selectedSemester)}
           </div>
         )}
 

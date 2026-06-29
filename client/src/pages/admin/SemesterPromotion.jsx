@@ -4,6 +4,7 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { adminService } from '../../services/adminService';
 import { facultyService } from '../../services/facultyService';
 import { toast } from 'react-toastify';
+import { semesterLabel } from '../../utils/formatters';
 import {
   FiArrowUpCircle, FiCheckCircle, FiXCircle, FiAlertTriangle,
   FiSearch, FiUsers, FiLoader,
@@ -90,7 +91,7 @@ export default function SemesterPromotion() {
               <label className="form-label">From Semester</label>
               <select value={semester} onChange={e => { setSemester(e.target.value); setPreview(null); }} className="input">
                 <option value="">Select…</option>
-                {[1,2,3,4,5,6,7].map(s => <option key={s} value={s}>Semester {s} → {s+1}</option>)}
+                {[1,2,3,4,5,6,7].map(s => <option key={s} value={s}>{semesterLabel(s)} → {semesterLabel(s+1)}</option>)}
               </select>
             </div>
             <div className="flex items-end">
@@ -118,7 +119,7 @@ export default function SemesterPromotion() {
                 <p className="text-2xl font-black text-gray-900 dark:text-white">
                   {preview.eligible.length + preview.blocked.length}
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">students in Semester {preview.semester}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">students in {semesterLabel(preview.semester)}</p>
               </div>
               <div className="bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-200 dark:border-green-800 p-4 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-wide text-green-600 dark:text-green-400 mb-1">Eligible</p>
@@ -140,7 +141,7 @@ export default function SemesterPromotion() {
                     Promote {preview.eligible.length} eligible student{preview.eligible.length !== 1 ? 's' : ''}
                   </p>
                   <p className="text-xs text-primary-600 dark:text-primary-400 mt-0.5">
-                    {facName} · Semester {preview.semester} → {preview.semester + 1}
+                    {facName} · {semesterLabel(preview.semester)} → {semesterLabel(preview.semester + 1)}
                   </p>
                 </div>
                 <button
@@ -234,7 +235,7 @@ export default function SemesterPromotion() {
             {preview.eligible.length === 0 && preview.blocked.length === 0 && (
               <div className="text-center py-14 text-gray-400 dark:text-gray-500">
                 <FiUsers size={36} className="mx-auto mb-3 opacity-40" />
-                <p className="font-medium">No students found in Semester {preview.semester} for this faculty.</p>
+                <p className="font-medium">No students found in {semesterLabel(preview.semester)} for this faculty.</p>
               </div>
             )}
           </>
@@ -244,7 +245,7 @@ export default function SemesterPromotion() {
       <ConfirmDialog
         open={confirmOpen}
         title="Confirm Promotion"
-        message={`Promote ${preview?.eligible?.length ?? 0} student${preview?.eligible?.length !== 1 ? 's' : ''} from Semester ${semester} → ${parseInt(semester) + 1} in ${facName}? This cannot be undone.`}
+        message={`Promote ${preview?.eligible?.length ?? 0} student${preview?.eligible?.length !== 1 ? 's' : ''} from ${semesterLabel(semester)} → ${semesterLabel(parseInt(semester) + 1)} in ${facName}? This cannot be undone.`}
         confirmLabel="Promote"
         variant="primary"
         onConfirm={handlePromote}

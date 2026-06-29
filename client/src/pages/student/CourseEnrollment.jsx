@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import enrollmentService from '../../services/enrollmentService';
 import { toast } from 'react-toastify';
 import { FiBookOpen, FiCheck, FiX, FiRefreshCw, FiList, FiSearch } from 'react-icons/fi';
+import { semesterLabel } from '../../utils/formatters';
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -129,7 +130,7 @@ export default function CourseEnrollment() {
               className="input w-36"
             >
               <option value="">All semesters</option>
-              {SEMESTERS.map(s => <option key={s} value={s}>Semester {s}</option>)}
+              {SEMESTERS.map(s => <option key={s} value={s}>{semesterLabel(s)}</option>)}
             </select>
             <div className="relative flex-1 max-w-xs">
               <FiSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

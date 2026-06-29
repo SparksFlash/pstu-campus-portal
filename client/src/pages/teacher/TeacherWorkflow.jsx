@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import teacherService from '../../services/teacherService';
 import { generateMarksheetPDF } from '../../utils/generateMarksheetPDF';
 import {
+import { semesterLabel } from '../../utils/formatters';
   FiChevronLeft, FiUsers, FiEdit3, FiDownload, FiSave, FiRefreshCw,
 } from 'react-icons/fi';
 
@@ -62,7 +63,7 @@ function StudentListPanel({ semester, onSelect }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{students.length} student(s) in Semester {semester}</p>
+        <p className="text-sm text-gray-500">{students.length} student(s) in {semesterLabel(semester)}</p>
         <div className="flex gap-2">
           <input
             value={search}
@@ -217,7 +218,7 @@ function MarksEntryPanel({ student, semester, onBack, onSaved }) {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-800">{student.name}</p>
-            <p className="text-xs text-gray-400">Semester {semester} · {student.registrationNumber || student.studentId || '—'}</p>
+            <p className="text-xs text-gray-400">{semesterLabel(semester)} · {student.registrationNumber || student.studentId || '—'}</p>
           </div>
         </div>
       </div>
@@ -226,7 +227,7 @@ function MarksEntryPanel({ student, semester, onBack, onSaved }) {
         <div className="text-center py-12 text-gray-400">
           <p className="font-medium">No courses found</p>
           <p className="text-sm mt-1">
-            Make sure courses are created for Semester {semester} under your faculty.
+            Make sure courses are created for {semesterLabel(semester)} under your faculty.
           </p>
         </div>
       ) : (
@@ -339,7 +340,7 @@ export default function TeacherWorkflow() {
               className="input w-36"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                <option key={s} value={s}>Semester {s}</option>
+                <option key={s} value={s}>{semesterLabel(s)}</option>
               ))}
             </select>
           </div>

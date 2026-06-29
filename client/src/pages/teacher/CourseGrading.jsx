@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { courseService } from '../../services/courseService';
 import Loading from '../../components/shared/Loading';
 import './styles/CourseGrading.css';
+import { semesterLabel } from '../../utils/formatters';
 
 export default function CourseGrading() {
   const { user } = useAuth();
@@ -177,7 +178,7 @@ export default function CourseGrading() {
           >
             {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
               <option key={sem} value={sem}>
-                Semester {sem}
+                {semesterLabel(sem)}
               </option>
             ))}
           </select>

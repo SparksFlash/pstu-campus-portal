@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiDownload, FiLoader, FiCheckCircle, FiXCircle, FiClock, FiSlash } from 'react-icons/fi';
 import paymentService from '../../services/paymentService';
 import { generateReceiptPDF } from '../../utils/generateReceiptPDF';
+import { semesterLabel } from '../../utils/formatters';
 
 const STATUS_CONFIG = {
   completed: { label: 'Paid',      icon: FiCheckCircle, cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
@@ -82,7 +83,7 @@ export default function PaymentHistory() {
                   return (
                     <tr key={p._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
                       <td className="px-5 py-3 font-mono text-xs text-gray-700 dark:text-gray-300">{p.tranId}</td>
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">Semester {p.semester}</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{semesterLabel(p.semester)}</td>
                       <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white">
                         BDT {p.amount?.toLocaleString()}
                       </td>

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import {
+import { semesterLabel } from '../../utils/formatters';
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, ReferenceLine, Dot,
 } from 'recharts';
@@ -14,7 +15,7 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-gray-100 shadow-lg rounded-xl px-4 py-3 text-sm">
-      <p className="font-semibold text-gray-700 mb-1">Semester {label}</p>
+      <p className="font-semibold text-gray-700 mb-1">{semesterLabel(label)}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full inline-block" style={{ background: p.color }} />

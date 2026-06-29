@@ -3,6 +3,7 @@ import api from '../../services/api';
 import Loading from '../../components/shared/Loading';
 import StudentMarksheet from './StudentMarksheet';
 import './styles/StudentMarksEntry.css';
+import { semesterLabel } from '../../utils/formatters';
 
 export default function StudentMarksEntry({ student, semester, onBack, onMarksUpdated }) {
   const [courses, setCourses] = useState([]);
@@ -201,7 +202,7 @@ export default function StudentMarksEntry({ student, semester, onBack, onMarksUp
         <div className="student-info-header">
           <h2>{student.name}</h2>
           <p className="meta-info">
-            {student.registrationNumber} | Semester {semester}
+            {student.registrationNumber} | {semesterLabel(semester)}
           </p>
         </div>
       </div>

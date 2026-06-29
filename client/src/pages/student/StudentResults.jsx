@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { gradeService } from '../../services/gradeService';
 import { generateMarksheetPDF } from '../../utils/generateMarksheetPDF';
 import CGPAProgressionChart from './CGPAProgressionChart';
-import { formatCGPA } from '../../utils/formatters';
+import { formatCGPA , semesterLabel } from '../../utils/formatters';
 import { FiDownload, FiBookOpen, FiAward, FiBarChart2, FiList } from 'react-icons/fi';
 
 const GRADE_COLORS = {
@@ -205,7 +205,7 @@ export default function StudentResults() {
                           : 'bg-white border border-gray-200 text-gray-600 hover:border-primary-300 hover:text-primary-600'
                       }`}
                     >
-                      Semester {sem}
+                      {semesterLabel(sem)}
                     </button>
                   ))}
                 </div>
@@ -214,7 +214,7 @@ export default function StudentResults() {
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                       <div>
-                        <h2 className="font-semibold text-gray-800">Semester {selectedSemester}</h2>
+                        <h2 className="font-semibold text-gray-800">{semesterLabel(selectedSemester)}</h2>
                         <p className="text-xs text-gray-400 mt-0.5">{semData.grades.length} course(s)</p>
                       </div>
                       <div className="text-right">

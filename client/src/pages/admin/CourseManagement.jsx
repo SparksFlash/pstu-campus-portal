@@ -6,6 +6,7 @@ import { facultyService } from '../../services/facultyService';
 import { userService } from '../../services/userService';
 import { toast } from 'react-toastify';
 import {
+import { semesterLabel } from '../../utils/formatters';
   FiBook, FiPlus, FiRefreshCw, FiEdit2, FiTrash2,
   FiChevronDown, FiChevronRight, FiSearch, FiX,
 } from 'react-icons/fi';
@@ -62,7 +63,7 @@ const CourseForm = ({ initial = {}, faculties = [], onSave, onCancel, saving }) 
           <label className="form-label">Semester <span className="text-red-400">*</span></label>
           <select name="semester" value={form.semester} onChange={set} className="input">
             <option value="">Select semester…</option>
-            {[1,2,3,4,5,6,7,8].map((s) => <option key={s} value={s}>Semester {s}</option>)}
+            {[1,2,3,4,5,6,7,8].map((s) => <option key={s} value={s}>{semesterLabel(s)}</option>)}
           </select>
         </div>
         <div>
@@ -320,7 +321,7 @@ const CourseManagement = () => {
                           {/* Semester sub-header */}
                           <div className="flex items-center gap-3 px-6 py-2 bg-gray-50/80 dark:bg-gray-700/20">
                             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-                              Semester {sem}
+                              {semesterLabel(sem)}
                             </span>
                             <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
                             <span className="text-xs text-gray-400 dark:text-gray-500">

@@ -4,6 +4,7 @@ import Loading from '../../components/shared/Loading';
 import { userService } from '../../services/userService';
 import { facultyService } from '../../services/facultyService';
 import { useAuth } from '../../hooks/useAuth';
+import { semesterLabel } from '../../utils/formatters';
 
 const Profile = () => {
   const { setUser } = useAuth();
@@ -116,7 +117,7 @@ const Profile = () => {
           </select>
           <select name="semester" value={form.semester} onChange={handleChange} className="input">
             <option value="">Select semester (students only)</option>
-            {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+            {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>{semesterLabel(s)}</option>)}
           </select>
           <div className="flex justify-between items-center mt-3">
             <div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import paymentService from '../../services/paymentService';
 import {
+import { semesterLabel } from '../../utils/formatters';
   FiCreditCard, FiCheckCircle, FiAlertCircle, FiLoader,
   FiDollarSign, FiInfo,
 } from 'react-icons/fi';
@@ -89,7 +90,7 @@ export default function PaymentGateway() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Semester Fee Payment</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Semester {semester} — fee calculated from enrolled course credit hours.
+          {semesterLabel(semester)} — fee calculated from enrolled course credit hours.
         </p>
       </div>
 
@@ -104,7 +105,7 @@ export default function PaymentGateway() {
       {!breakdown && !error && (
         <div className="text-center py-16 text-gray-400 dark:text-gray-500">
           <FiDollarSign size={40} className="mx-auto mb-3 opacity-40" />
-          <p className="font-medium">No courses found for Semester {semester}.</p>
+          <p className="font-medium">No courses found for {semesterLabel(semester)}.</p>
           <p className="text-sm mt-1">Please contact the admin to add courses for your semester.</p>
         </div>
       )}
@@ -118,7 +119,7 @@ export default function PaymentGateway() {
             <div className="flex items-center gap-2">
               <FiDollarSign size={16} className="text-primary-600 dark:text-primary-400" />
               <span className="font-semibold text-sm text-gray-800 dark:text-white">
-                Semester {semester} Fee Breakdown
+                {semesterLabel(semester)} Fee Breakdown
               </span>
             </div>
             {paid && (

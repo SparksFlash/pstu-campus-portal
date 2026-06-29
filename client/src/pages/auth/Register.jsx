@@ -5,6 +5,7 @@ import { authService } from '../../services/authService';
 import { facultyService } from '../../services/facultyService';
 import { validateEmail, validatePassword } from '../../utils/validators';
 import { useAuth } from '../../hooks/useAuth';
+import { semesterLabel } from '../../utils/formatters';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -171,7 +172,7 @@ const Register = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Current Semester</label>
                 <select value={semester} onChange={e => setSemester(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
                   <option value="">Select semester</option>
-                  {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+                  {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>{semesterLabel(s)}</option>)}
                 </select>
               </div>
             </>

@@ -51,6 +51,16 @@ export const capitalizeFirst = (text) => {
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 };
 
+// Converts semester number (1-8) to academic label
+// 1→Level-1 Semester-I, 2→Level-1 Semester-II, 3→Level-2 Semester-I, etc.
+export const semesterLabel = (n) => {
+  const num = parseInt(n);
+  if (!num || num < 1 || num > 8) return `Semester ${n}`;
+  const level = Math.ceil(num / 2);
+  const part  = num % 2 === 1 ? 'I' : 'II';
+  return `Level-${level} Semester-${part}`;
+};
+
 export const getInitials = (name) => {
   if (!name) return '';
   return name

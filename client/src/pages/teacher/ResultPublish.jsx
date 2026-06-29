@@ -4,6 +4,7 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { toast } from 'react-toastify';
 import teacherService from '../../services/teacherService';
 import { FiCheckSquare, FiSlash, FiRefreshCw, FiUsers } from 'react-icons/fi';
+import { semesterLabel } from '../../utils/formatters';
 
 export default function ResultPublish() {
   const [semester, setSemester]   = useState(1);
@@ -71,7 +72,7 @@ export default function ResultPublish() {
               className="input w-36"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                <option key={s} value={s}>Semester {s}</option>
+                <option key={s} value={s}>{semesterLabel(s)}</option>
               ))}
             </select>
             <button onClick={load} className="btn-outline flex items-center gap-1.5">
@@ -91,7 +92,7 @@ export default function ResultPublish() {
           ) : !status || status.total === 0 ? (
             <div className="text-center py-10 text-gray-400">
               <FiUsers size={36} className="mx-auto mb-3 opacity-40" />
-              <p className="font-medium">No grades found for Semester {semester}</p>
+              <p className="font-medium">No grades found for {semesterLabel(semester)}</p>
               <p className="text-sm mt-1">Enter marks first via Marks Management.</p>
             </div>
           ) : (
@@ -99,7 +100,7 @@ export default function ResultPublish() {
               {/* Progress bar */}
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium text-gray-700">Publishing progress — Semester {semester}</span>
+                  <span className="font-medium text-gray-700">Publishing progress — {semesterLabel(semester)}</span>
                   <span className="text-gray-500">{status.published} / {status.total} published ({publishPct}%)</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2.5">
@@ -143,7 +144,7 @@ export default function ResultPublish() {
 
               {allPublished && (
                 <p className="text-sm text-green-600 font-medium">
-                  ✓ All results for Semester {semester} are published and visible to students.
+                  ✓ All results for {semesterLabel(semester)} are published and visible to students.
                 </p>
               )}
             </div>
@@ -204,8 +205,8 @@ export default function ResultPublish() {
         title={confirm?.action === 'publish' ? 'Publish All Results' : 'Unpublish All Results'}
         message={
           confirm?.action === 'publish'
-            ? `All ${status?.draft || 0} draft grade(s) for Semester ${semester} will become visible to students immediately.`
-            : `All ${status?.published || 0} published grade(s) for Semester ${semester} will be hidden from students.`
+            ? `All ${status?.draft || 0} draft grade(s) for ${semesterLabel(semester)} will become visible to students immediately.`
+            : `All ${status?.published || 0} published grade(s) for ${semesterLabel(semester)} will be hidden from students.`
         }
         confirmLabel={confirm?.action === 'publish' ? 'Publish' : 'Unpublish'}
         variant={confirm?.action === 'publish' ? 'primary' : 'danger'}
