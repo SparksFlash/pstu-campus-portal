@@ -3,6 +3,7 @@ const Faculty = require('../models/Faculty');
 const Course = require('../models/Course');
 const Grade = require('../models/Grade');
 const Result = require('../models/Result');
+const Payment = require('../models/Payment');
 const AuditLog = require('../models/AuditLog');
 const { paginateQuery } = require('../utils/paginate');
 
@@ -136,6 +137,143 @@ exports.updateUser = async (req, res) => {
     res.json({ message: 'User updated successfully', user: out });
   } catch (err) {
     console.error('updateUser error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ── Semester Promotion ────────────────────────────────────────────────────────
+
+async function checkStudentEligibility(student, semester) {
+  const [grades, payment] = await Promise.all([
+    Grade.find({ student: student._id, semester, status: 'published' }).select('grade course').populate('course', 'code'),
+    Payment.findOne({ student: student._id, semester, status: 'completed' }),
+  ]);
+
+  const reasons = [];
+
+  if (grades.length === 0) {
+    reasons.push('No published grades for this semester');
+  } else {
+    const failed = grades.filter(g => g.grade === 'F');
+    if (failed.length > 0) {
+      reasons.push(`Failed: ${failed.map(g => g.course?.code || 'unknown').join(', ')}`);
+    }
+  }
+
+  if (!payment) {
+    reasons.push('Semester fee unpaid');
+  }
+
+  return { eligible: reasons.length === 0, reasons };
+}
+
+// GET /admin/promote/preview?faculty=<id>&semester=<n>
+exports.getSemesterPromotionPreview = async (req, res) => {
+  try {
+    const { faculty, semester } = req.query;
+    if (!faculty || !semester) {
+      return res.status(400).json({ message: 'faculty and semester are required' });
+    }
+    const sem = parseInt(semester, 10);
+    if (sem < 1 || sem > 7) {
+      return res.status(400).json({ message: 'Semester must be between 1 and 7' });
+    }
+
+    const students = await User.find({
+      role: 'student', faculty, semester: sem, isActive: true,
+    }).select('name email registrationNumber semester');
+
+    const eligible = [];
+    const blocked  = [];
+
+    await Promise.all(students.map(async (student) => {
+      const { eligible: ok, reasons } = await checkStudentEligibility(student, sem);
+      const entry = {
+        _id:                student._id,
+        name:               student.name,
+        email:              student.email,
+        registrationNumber: student.registrationNumber,
+        currentSemester:    student.semester,
+      };
+      if (ok) {
+        eligible.push(entry);
+      } else {
+        blocked.push({ ...entry, reasons });
+      }
+    }));
+
+    // stable sort by name
+    eligible.sort((a, b) => a.name.localeCompare(b.name));
+    blocked.sort((a, b) => a.name.localeCompare(b.name));
+
+    res.json({ semester: sem, faculty, eligible, blocked });
+  } catch (err) {
+    console.error('getSemesterPromotionPreview error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// POST /admin/promote
+// Body: { faculty, semester, studentIds? }
+exports.promoteSemester = async (req, res) => {
+  try {
+    const { faculty, semester, studentIds } = req.body;
+    if (!faculty || !semester) {
+      return res.status(400).json({ message: 'faculty and semester are required' });
+    }
+    const sem = parseInt(semester, 10);
+    if (sem < 1 || sem > 7) {
+      return res.status(400).json({ message: 'Semester must be between 1 and 7' });
+    }
+
+    // Fetch candidates — use provided list or all students in that semester
+    const filter = { role: 'student', faculty, semester: sem, isActive: true };
+    if (studentIds?.length) filter._id = { $in: studentIds };
+    const students = await User.find(filter).select('name email registrationNumber semester');
+
+    const promotable = [];
+    const skipped    = [];
+
+    await Promise.all(students.map(async (student) => {
+      const { eligible, reasons } = await checkStudentEligibility(student, sem);
+      if (eligible) {
+        promotable.push(student._id);
+      } else {
+        skipped.push({ name: student.name, registrationNumber: student.registrationNumber, reasons });
+      }
+    }));
+
+    if (promotable.length > 0) {
+      await User.updateMany(
+        { _id: { $in: promotable } },
+        { $inc: { semester: 1 }, updatedAt: Date.now() },
+      );
+
+      // Audit log — one entry covering the batch
+      await AuditLog.create({
+        actor:     req.user._id,
+        actorRole: req.user.role,
+        action:    'SEMESTER_PROMOTION',
+        resource:  'User',
+        after: {
+          promotedCount: promotable.length,
+          fromSemester:  sem,
+          toSemester:    sem + 1,
+          faculty,
+          promotedIds:   promotable,
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+    }
+
+    res.json({
+      message:  `${promotable.length} student${promotable.length !== 1 ? 's' : ''} promoted to Semester ${sem + 1}.`,
+      promoted: promotable.length,
+      skipped,
+    });
+  } catch (err) {
+    console.error('promoteSemester error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

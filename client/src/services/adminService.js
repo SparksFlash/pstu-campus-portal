@@ -15,4 +15,10 @@ export const adminService = {
 
   updateUser: (userId, data) =>
     api.patch(`/admin/users/${userId}`, data),
+
+  getPromotionPreview: (faculty, semester) =>
+    api.get('/admin/promote/preview', { params: { faculty, semester } }),
+
+  promoteSemester: (data) =>
+    api.post('/admin/promote', data),
 };

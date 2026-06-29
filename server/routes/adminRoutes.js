@@ -8,12 +8,16 @@ const {
   toggleUserActive,
   getAllUsers,
   updateUser,
+  getSemesterPromotionPreview,
+  promoteSemester,
 } = require('../controllers/adminController');
 
 // All admin routes require authentication + admin role
 router.use(auth, allowRoles('admin', 'superadmin'));
 
 router.get('/stats', getDashboardStats);
+router.get('/promote/preview', getSemesterPromotionPreview);
+router.post('/promote', promoteSemester);
 router.get('/audit-logs', getAuditLogs);
 router.get('/users', getAllUsers);
 router.patch('/users/:id/toggle-active', toggleUserActive);

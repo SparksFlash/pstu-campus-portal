@@ -36,6 +36,7 @@ import PaymentHistory from './pages/student/PaymentHistory';
 import PaymentSuccess from './pages/student/PaymentSuccess';
 import PaymentFail from './pages/student/PaymentFail';
 import PaymentDashboard from './pages/admin/PaymentDashboard';
+import SemesterPromotion from './pages/admin/SemesterPromotion';
 import Profile from './pages/profile/Profile';
 import ChangePassword from './pages/profile/ChangePassword';
 import StudentOverview from './pages/student/StudentOverview';
@@ -73,7 +74,8 @@ function App() {
               <Route path="/admin/users"     element={<ProtectedRoute requiredRoles={['admin','superadmin']}><UserManagement /></ProtectedRoute>} />
               <Route path="/admin/faculties" element={<ProtectedRoute requiredRoles={['admin','superadmin']}><FacultyManagement /></ProtectedRoute>} />
               <Route path="/admin/audit-logs" element={<ProtectedRoute requiredRoles={['admin','superadmin']}><AuditLog /></ProtectedRoute>} />
-              <Route path="/admin/payments"  element={<ProtectedRoute requiredRoles={['admin','superadmin']}><PaymentDashboard /></ProtectedRoute>} />
+              <Route path="/admin/payments"    element={<ProtectedRoute requiredRoles={['admin','superadmin']}><PaymentDashboard /></ProtectedRoute>} />
+              <Route path="/admin/promotions" element={<ProtectedRoute requiredRoles={['admin']}><SemesterPromotion /></ProtectedRoute>} />
               <Route path="/superadmin/institutions" element={<ProtectedRoute requiredRoles={['superadmin']}><InstitutionList /></ProtectedRoute>} />
 
               {/* Teacher routes */}
