@@ -21,7 +21,16 @@ exports.getStudentResults = async (req, res) => {
 
 exports.generateResult = async (req, res) => {
   try {
-    const { student, semester, faculty, generatedBy } = req.body;
+    const { student, semester } = req.body;
+
+    // Derive faculty and generatedBy from the authenticated user — never trust client
+    const generatedBy = req.user._id;
+    const faculty     = req.user.faculty?._id || req.user.faculty;
+
+    if (!faculty) {
+      return res.status(403).json({ message: 'Your account has no faculty assigned.' });
+    }
+
     const grades = await Grade.find({ student, semester, faculty }).populate('course');
     
     if (grades.length === 0) return res.status(400).json({ message: 'No grades found for this semester' });
@@ -78,7 +87,16 @@ exports.generateResult = async (req, res) => {
 
 exports.updateResult = async (req, res) => {
   try {
-    const result = await Result.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // Whitelist only safe fields — never pass req.body directly
+    const { sgpa, cgpa, courses, totalCredits, earnedCredits } = req.body;
+    const allowed = {};
+    if (sgpa          !== undefined) allowed.sgpa          = sgpa;
+    if (cgpa          !== undefined) allowed.cgpa          = cgpa;
+    if (courses       !== undefined) allowed.courses       = courses;
+    if (totalCredits  !== undefined) allowed.totalCredits  = totalCredits;
+    if (earnedCredits !== undefined) allowed.earnedCredits = earnedCredits;
+
+    const result = await Result.findByIdAndUpdate(req.params.id, allowed, { new: true });
     if (!result) return res.status(404).json({ message: 'Result not found' });
     res.json(result);
   } catch (err) {

@@ -6,7 +6,6 @@ const Course            = require('../models/Course');
 const User              = require('../models/User');
 const { SEMESTER_FEE }  = require('../config/constants');
 
-// ── Dynamic fee calculator ────────────────────────────────────────────
 async function calculateSemesterFee(semester, facultyId) {
   const courses      = await Course.find({ semester: parseInt(semester), faculty: facultyId }).select('creditHours');
   const totalCredits = courses.reduce((s, c) => s + (c.creditHours || 0), 0);
@@ -227,13 +226,34 @@ exports.handleCancel = async (req, res) => {
 // IPN — server-to-server (optional, won't fire on localhost sandbox)
 exports.handleIPN = async (req, res) => {
   try {
-    const { val_id, tran_id, status } = req.body;
-    if (status === 'VALID' || status === 'VALIDATED') {
-      await Payment.findOneAndUpdate(
-        { tranId: tran_id, status: 'pending' },
-        { status: 'completed', valId: val_id, paidAt: new Date(), gatewayResponse: req.body }
-      );
+    const { val_id, tran_id } = req.body;
+
+    // Verify the transaction with SSLCommerz before trusting the status
+    if (!val_id) return res.status(200).end();
+
+    const sslcz = new SSLCommerzPayment(STORE_ID, STORE_PASS, IS_LIVE);
+    const validation = await sslcz.validate({ val_id });
+
+    if (
+      (validation?.status === 'VALID' || validation?.status === 'VALIDATED') &&
+      validation?.tran_id === tran_id
+    ) {
+      const payment = await Payment.findOne({ tranId: tran_id, status: 'pending' });
+      if (payment) {
+        // Guard: amount must match what we stored
+        const expected = parseFloat(payment.amount);
+        const received = parseFloat(validation.amount);
+        if (Math.abs(expected - received) < 1) {
+          payment.status       = 'completed';
+          payment.valId        = val_id;
+          payment.bankTranId   = validation.bank_tran_id;
+          payment.paidAt       = new Date();
+          payment.gatewayResponse = validation;
+          await payment.save();
+        }
+      }
     }
+
     res.status(200).end();
   } catch {
     res.status(200).end(); // always 200 to IPN
