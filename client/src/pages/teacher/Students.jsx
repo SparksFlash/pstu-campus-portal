@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import Loading from '../../components/shared/Loading';
 import { userService } from '../../services/userService';
+import { semesterLabel } from '../../utils/formatters';
 
 const Students = () => {
   const [students, setStudents] = useState([]);
@@ -61,7 +62,7 @@ const Students = () => {
               <div key={sem} className="mb-4 border rounded">
                 <div className="bg-gray-50 px-4 py-2 border-b flex items-center justify-between">
                   <div>
-                    <span className="font-medium">Semester: {sem}</span>
+                    <span className="font-medium">{semesterLabel(sem)}</span>
                     <span className="text-sm text-gray-500 ml-2">({list.length})</span>
                   </div>
                 </div>
